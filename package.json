@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/CyrilDenoyelle/mediagar/issues"
   },
-  "homepage": "https://github.com/CyrilDenoyelle/mediagar#readme"
+  "homepage": "https://github.com/CyrilDenoyelle/mediagar#readme",
+  "dependencies": {
+    "phaser": "^2.6.2"
+  }
 }

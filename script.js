@@ -5,10 +5,13 @@ var game = new Phaser.Game(900, 600, Phaser.AUTO, "#app", {preload: preload, cre
 
 function preload(){
 	game.load.image("mediapart", "assets/journal.png");
+	game.load.image("fond", "assets/fond.png");
 }
 
 var player,
 graphic,
+fond,
+nbsource = 0,
 balls;
 
 function create(){
@@ -18,21 +21,24 @@ function create(){
 	// game.physics.p2.enable(player);
 
 	// game.stage.backgroundColor = '#FFFFFF';
-	game.add.tileSprite(0, 0, 4000, 4000, 'mediapart');
-
+	fond = game.add.tileSprite(0, 0, 4000, 4000, 'fond');
 	game.world.setBounds(0, 0, 4000, 4000);
 
 	balls = game.add.group();
 
-	graphic = game.add.graphics();
-	graphic.lineStyle(10, 0x000000, 1);
 
-	graphic.beginFill(0x0000FF, 1);
-	graphic.drawCircle(0, 0, 200);
+	function cercles(rayon, couleur){
+		graphic = game.add.graphics();
+		graphic.lineStyle(8, 0x000000, 1);
+		
+		graphic.beginFill("0x"+couleur, 1);
+		graphic.drawCircle(0, 0, rayon);
+		return graphic;
+	}
 
 
 
-	player = game.add.sprite(0, 0).addChild(graphic);
+	player = game.add.sprite(0, 0).addChild(cercles(100, "0000FF"));
 	player.enableBody = true;
 	player.anchor.setTo(0.5, 0.5);
 
@@ -40,12 +46,16 @@ function create(){
 	game.physics.arcade.enable(player);
 	player.body.allowRotation = false;
 	game.camera.follow(player);
-}
+}	
 
 
 function update(){
 
-	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, 1000);
+	if(nbsource<5){
+		nbsource++
+		// source = sources.create(game.world.randomX, game.world.randomY, "mediapart")
+	}
+	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, 600);
 
 
 }

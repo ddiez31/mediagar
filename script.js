@@ -1,7 +1,6 @@
 
-
 // var game = new Phaser.Game(900, 600, Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
-var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
+var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "#app", {preload: preload, create: create, update: update, render: render});
 
 
 function preload(){
@@ -46,13 +45,18 @@ function randArray(input){
 	return input[Math.floor(Math.random()*input.length)]
 }
 
-function cercles(rayon, couleur, opacity, sprite){
+function cercles(couleur, opacity, sprite, rand){
 	graphic = game.add.graphics();
 	graphic.lineStyle(8, 0x000000, 1);
 
 	graphic.beginFill("0x"+couleur, opacity);
 	// graphic.drawImag	e("image", 100, 100);
-	graphic.drawCircle(0, 0, rayon);
+
+	if(rand){
+		graphic.drawCircle(0, 0, game.rnd.integerInRange(100, 300));
+	}else{
+		graphic.drawCircle(0, 0, sprite.width/2);
+	}
 	return graphic;
 }
 
@@ -85,11 +89,12 @@ function create(){
 	
 
 	player = game.add.sprite(0, 0);
-	player.addChild(cercles(100, randArray(colors), 1));
+	player.anchor.setTo((player.width)/70);
 	game.physics.arcade.enable(player);
 	player.enableBody = true;
 	player.body.collideWorldBounds = true;
-	// player.body.setCircle(100);
+	player.addChild(cercles(randArray(colors), 1, player, false));
+	player.body.setCircle(player.width);
 
 
 	player.body.allowRotation = false;
@@ -118,7 +123,8 @@ function update(){
 		console.log('coucou i = '+i)
 	}
 
-	if(nbsource<50 && i%50===0){
+	if(nbsource<50 && i%100===0){
+		console.log(	player.width)
 		playpos = player.position.x + " X et Y " + player.position.y;
 		// console.log(playpos)
 		nbsource++;
@@ -180,7 +186,7 @@ function update(){
 		posY = player.position.y - (- randbet)
 
 		console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
-		if(game.rnd.integerInRange(0, 1) == 0){
+		if(game.rnd.integerInRange(0, 1) == 0 || true){
 			source = sourcesfiable.create(posX, posY, "mediapart");
 			var color = "0000FF";
 		}else{
@@ -188,7 +194,8 @@ function update(){
 			var color = "FF0000";
 		}
 		source.anchor.setTo(0.5, 0.5);
-		source.addChild(cercles(game.rnd.integerInRange(100, 300), color, 0.5));
+		source.body.setCircle(source.width/2);
+		source.addChild(cercles(color, 0.5, source, false));
 
 		// sources.velocity.x = 200
 	}
@@ -204,6 +211,17 @@ function collideHandlerFiable(player, source){
 }
 function collideHandlerNonFiable(player, source){
 	player.kill();
+
+}
+
+function render(){
+	game.debug.body(player);
+	if(source){
+		game.debug.body(source);
+	}
+	// if(sourcesfiable){
+	// 	sourcesfiable.forEach(game.debug.body(sourcesfiable.this));
+	// }
 
 }
 

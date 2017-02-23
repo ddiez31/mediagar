@@ -4,7 +4,7 @@ var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "
 
 
 function preload(){
-	game.load.image("mediapart", "assets/journal.png");
+	game.load.image("mediapart", "assets/mediapart.png");
 	game.load.image("20min", "assets/20minutes.jpg");
 	game.load.image("bfm", "assets/BFMTV.png");
 	game.load.image("lagauche", "assets/lagauchematuer.png");
@@ -238,8 +238,8 @@ function debug(ceci){
 	game.debug.body(ceci);
 }
 function render(){
-	// sourcesfiable.forEachAlive(debug, this);
-	// sourcesnonfiable.forEachAlive(debug, this);
+	sourcesfiable.forEachAlive(debug, this);
+	sourcesnonfiable.forEachAlive(debug, this);
 	// game.debug.body(player);
 	// if(source){
 	// 	game.debug.body(source);

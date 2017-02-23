@@ -5,6 +5,11 @@ var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "
 
 function preload(){
 	game.load.image("mediapart", "assets/journal.png");
+	game.load.image("20min", "assets/20minutes.jpg");
+	game.load.image("bfm", "assets/BFMTV.png");
+	game.load.image("lagauche", "assets/lagauchematuer.png");
+	game.load.image("lavie", "assets/lavie.png");
+	game.load.image("reseauinter", "assets/reseauinternationnal.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
 }
@@ -42,6 +47,8 @@ $(window).on('contextmenu', function(e){
 });
 
 var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
+var nonfiables = ["lagauche", "reseauinter"];
+var fiables = ["20min", "bfm", "mediapart", "lavie"];
 var signes = ["+", "-"];
 function randArray(input){
 	return input[Math.floor(Math.random()*input.length)]
@@ -57,7 +64,7 @@ function cercles(couleur, opacity, sprite, rand){
 	// graphic.drawImag	e("image", 100, 100);
 
 	if(rand){
-		graphic.drawCircle(0, 0, game.rnd.integerInRange(sprite.width, sprite.width+250));
+		graphic.drawCircle(0, 0, game.rnd.integerInRange(sprite.width, sprite.width+sprite.width/10));
 	}else{
 		graphic.drawCircle(0, 0, sprite.width*2);
 	}
@@ -78,10 +85,10 @@ function create(){
 	sourcesfiable = game.add.group();
 	sourcesfiable.enableBody = true;
 	sourcesfiable.physicsBodyType = Phaser.Physics.ARCADE;
-	sourcesfiable.setAll('anchor.x', 0.5);
-	sourcesfiable.setAll('anchor.y', 0.5);
+	// sourcesfiable.setAll('anchor.x', 0.5);
+	// sourcesfiable.setAll('anchor.y', 0.5);
 	sourcesfiable.collideWorldBounds = true;
-	sourcesfiable.setAll("setCircle", 100);
+	// sourcesfiable.setAll("setCircle", 100);
 
 	sourcesnonfiable = game.add.group();
 	sourcesnonfiable.enableBody = true;
@@ -115,9 +122,9 @@ function update(){
 	i++
 
 	// game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
-	// game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
-	// game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
 
+	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
+	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
 	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
 	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
 
@@ -128,7 +135,7 @@ function update(){
 		console.log('coucou i = '+i)
 	}
 
-	if(nbsource<50 && i%10===0){
+	if(nbsource<10 && i%30===0){
 
 		playpos = player.position.x + " X et Y " + player.position.y;
 		// console.log(playpos)
@@ -192,16 +199,17 @@ function update(){
 
 		console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
 		if(game.rnd.integerInRange(0, 1) == 0){
-			source = sourcesfiable.create(posX, posY, "mediapart");
+			source = sourcesfiable.create(posX, posY, randArray(fiables));
 			var color = "0000FF";
 		}else{
-			source = sourcesnonfiable.create(posX, posY, "mediapart");
+			source = sourcesnonfiable.create(posX, posY, randArray(nonfiables));
 			var color = "FF0000";
 		}
-		source.body.setCircle(source.width);
 		source.anchor.setTo(0.5);
 		source.addChild(cercles(randArray(colors), 0.5, source, true));
+		source.body.setCircle(source.width/2);
 		// source.anchor.setTo(source.width/32);
+
 
 		// console.log(sourcesfiable.children.indexOf(player))
 		// sources.velocity.x = 200
@@ -230,10 +238,10 @@ function collideHandlerNonFiable(player, source){
 }
 
 function render(){
-	game.debug.body(player);
-	if(source){
-		game.debug.body(source);
-	}
+	// game.debug.body(player);
+	// if(source){
+	// 	game.debug.body(source);
+	// }
 	// if(sourcesfiable){
 	// 	sourcesfiable.forEach(game.debug.body(sourcesfiable.this));
 	// }

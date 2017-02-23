@@ -1,62 +1,209 @@
-console.log("appinit");
 
-var game = new Phaser.Game(900, 600, Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
+
+// var game = new Phaser.Game(900, 600, Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
+var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
 
 
 function preload(){
 	game.load.image("mediapart", "assets/journal.png");
 	game.load.image("fond", "assets/fond.png");
+	game.load.image("poulpe", "assets/superpowers-logo.png");
 }
 
-var player,
+var
+player,
 graphic,
 fond,
+sources,
+source,
+posX,
+posY,
 nbsource = 0,
+i=0,
+wwidth,
+wheight,
 balls;
+
+//KONAMI CODE
+if ( window.addEventListener ) {
+	var kkeys = [], konami = "38,38,40,40,37,39,37,39,66,65";
+	window.addEventListener("keydown", function(e){
+		kkeys.push( e.keyCode );
+		if ( kkeys.toString().indexOf( konami ) >= 0 ) {
+			console.log('coucoukonami');
+			kkeys = [];
+		}
+	}, true);
+}
+
+$(window).on('contextmenu', function(e){
+	e.preventDefault();
+});
+
+var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
+var signes = ["+", "-"];
+function randArray(input){
+	return input[Math.floor(Math.random()*input.length)]
+}
+
+function cercles(rayon, couleur, opacity, sprite){
+	graphic = game.add.graphics();
+	graphic.lineStyle(8, 0x000000, 1);
+
+	graphic.beginFill("0x"+couleur, opacity);
+	// graphic.drawImag	e("image", 100, 100);
+	graphic.drawCircle(0, 0, rayon);
+	return graphic;
+}
+
+
 
 function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
-	// game.physics.startSystem(Phaser.Physics.P2JS);
-	// player = game.add.sprite(200, 200, "mediapart");
-	// game.physics.p2.enable(player);
 
 	// game.stage.backgroundColor = '#FFFFFF';
-	fond = game.add.tileSprite(0, 0, 4000, 4000, 'fond');
-	game.world.setBounds(0, 0, 4000, 4000);
+	fond = game.add.tileSprite(-1000, -1000, 2000, 2000, 'fond');
+	game.world.setBounds(-1000, -1000, 2000, 2000);
+	wwidth = game.world.width;
+	wheight = game.world.height;
 
-	balls = game.add.group();
+	sourcesfiable = game.add.group();
+	sourcesfiable.enableBody = true;
+	sourcesfiable.physicsBodyType = Phaser.Physics.ARCADE;
+	sourcesfiable.setAll('anchor.x', 0.5);
+	sourcesfiable.setAll('anchor.y', 0.5);
+	sourcesfiable.collideWorldBounds = true;
+	sourcesfiable.setAll("setCircle", 100);
 
+	sourcesnonfiable = game.add.group();
+	sourcesnonfiable.enableBody = true;
+	sourcesnonfiable.physicsBodyType = Phaser.Physics.ARCADE;
+	sourcesnonfiable.setAll('anchor.x', 0.5);
+	sourcesnonfiable.setAll('anchor.y', 0.5);
+	sourcesnonfiable.collideWorldBounds = true;
+	sourcesnonfiable.setAll("setCircle", 100);
+	
 
-	function cercles(rayon, couleur){
-		graphic = game.add.graphics();
-		graphic.lineStyle(8, 0x000000, 1);
-		
-		graphic.beginFill("0x"+couleur, 1);
-		graphic.drawCircle(0, 0, rayon);
-		return graphic;
-	}
-
-
-
-	player = game.add.sprite(0, 0).addChild(cercles(100, "0000FF"));
-	player.enableBody = true;
-	player.anchor.setTo(0.5, 0.5);
-
-
+	player = game.add.sprite(0, 0);
+	player.addChild(cercles(100, randArray(colors), 1));
 	game.physics.arcade.enable(player);
+	player.enableBody = true;
+	player.body.collideWorldBounds = true;
+	// player.body.setCircle(100);
+
+
 	player.body.allowRotation = false;
 	game.camera.follow(player);
-}	
+}
 
+var extDroite = wwidth/2-200,
+extGauche = -(wwidth/2)+200,
+extHaut = -(wheight/2)+200,
+extBas = wheight/2-200;
 
 function update(){
 
-	if(nbsource<5){
-		nbsource++
-		// source = sources.create(game.world.randomX, game.world.randomY, "mediapart")
-	}
-	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, 600);
+	i++
 
+	game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
+	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
+	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
+
+	// game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
+	// game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
+
+	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, 600);
+	if(i > 9999){
+		i = 0;
+		console.log('coucou i = '+i)
+	}
+
+	if(nbsource<50 && i%50===0){
+		playpos = player.position.x + " X et Y " + player.position.y;
+		// console.log(playpos)
+		nbsource++;
+		// // var popctn = 0;
+
+		// do{
+		// 	if(randArray(signes)=== "+"){
+		// 		randbet = game.rnd.integerInRange(200, 500);
+		// 		posX = player.position.x - (-randbet);
+		// 		if(posX < extDroite){
+		// 			var pop = false;
+		// 			nbsource--;
+		// 		}else{
+		// 			var pop = true;
+		// 		}
+		// 	}else{
+		// 		randbet = game.rnd.integerInRange(200, 500);
+		// 		posX = player.position.x - randbet;
+		// 		if(posX > extGauche){
+		// 			var pop = false;
+		// 			nbsource--;
+		// 		}else{
+		// 			var pop = true;
+		// 		}
+		// 	}
+		// 	console.log(pop);
+		// }while(!pop);
+		// // if(pop){
+		// // 	popctn++;
+		// // }
+
+		// do{
+		// 	if(randArray(signes)=== "+"){
+		// 		randbet = game.rnd.integerInRange(200, 500);
+		// 		posY = player.position.y - (-randbet);
+		// 		if(posY < extBas){
+		// 			var pop = false;
+		// 			nbsource--;
+		// 		}else{
+		// 			var pop = true;
+		// 		}
+		// 	}else{
+		// 		randbet = game.rnd.integerInRange(200, 500);
+		// 		posY = player.position.y - randbet;
+		// 		if(posY > extHaut){
+		// 			var pop = false;
+		// 			nbsource--;
+		// 		}else{
+		// 			var pop = true;
+		// 		}
+		// 	}
+		// }while(!pop);
+		// // if(pop){
+		// // 	popctn++;
+		// // }
+		randbet = game.rnd.integerInRange(-500, 500);
+		posX = player.position.x - (- randbet);
+		randbet = game.rnd.integerInRange(-500, 500);
+		posY = player.position.y - (- randbet)
+
+		console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
+		if(game.rnd.integerInRange(0, 1) == 0){
+			source = sourcesfiable.create(posX, posY, "mediapart");
+			var color = "0000FF";
+		}else{
+			source = sourcesnonfiable.create(posX, posY, "mediapart");
+			var color = "FF0000";
+		}
+		source.anchor.setTo(0.5, 0.5);
+		source.addChild(cercles(game.rnd.integerInRange(100, 300), color, 0.5));
+
+		// sources.velocity.x = 200
+	}
+
+	if(i%60===0){
+
+	}
+}
+
+function collideHandlerFiable(player, source){
+	source.kill();
+	nbsource--
+}
+function collideHandlerNonFiable(player, source){
+	player.kill();
 
 }
 

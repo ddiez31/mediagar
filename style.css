@@ -1,0 +1,7 @@
+body {
+	display: flex;
+}
+
+#app {
+	justify-content: center;
+}

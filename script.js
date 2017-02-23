@@ -21,6 +21,8 @@ nbsource = 0,
 i=0,
 wwidth,
 wheight,
+playerspeed= 600,
+score= 0,
 balls;
 
 //KONAMI CODE
@@ -47,15 +49,17 @@ function randArray(input){
 
 function cercles(couleur, opacity, sprite, rand){
 	graphic = game.add.graphics();
-	graphic.lineStyle(8, 0x000000, 1);
-
+	if(sourcesfiable.children.indexOf(sprite) >-1 || sourcesnonfiable.children.indexOf(sprite) >-1){
+		graphic.lineStyle(5, 0x000000, 1);
+		// graphic.anchor.
+	}
 	graphic.beginFill("0x"+couleur, opacity);
 	// graphic.drawImag	e("image", 100, 100);
 
 	if(rand){
-		graphic.drawCircle(0, 0, game.rnd.integerInRange(100, 300));
+		graphic.drawCircle(0, 0, game.rnd.integerInRange(sprite.width, sprite.width+250));
 	}else{
-		graphic.drawCircle(0, 0, sprite.width/2);
+		graphic.drawCircle(0, 0, sprite.width*2);
 	}
 	return graphic;
 }
@@ -89,7 +93,7 @@ function create(){
 	
 
 	player = game.add.sprite(0, 0);
-	player.anchor.setTo((player.width)/70);
+	player.anchor.setTo((player.width)/32);
 	game.physics.arcade.enable(player);
 	player.enableBody = true;
 	player.body.collideWorldBounds = true;
@@ -110,21 +114,22 @@ function update(){
 
 	i++
 
-	game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
-	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
-	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
+	// game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
+	// game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
+	// game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
 
-	// game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
-	// game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
+	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
+	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
 
-	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, 600);
+	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+
 	if(i > 9999){
 		i = 0;
 		console.log('coucou i = '+i)
 	}
 
-	if(nbsource<50 && i%100===0){
-		console.log(	player.width)
+	if(nbsource<50 && i%10===0){
+
 		playpos = player.position.x + " X et Y " + player.position.y;
 		// console.log(playpos)
 		nbsource++;
@@ -183,20 +188,22 @@ function update(){
 		randbet = game.rnd.integerInRange(-500, 500);
 		posX = player.position.x - (- randbet);
 		randbet = game.rnd.integerInRange(-500, 500);
-		posY = player.position.y - (- randbet)
+		posY = player.position.y - (- randbet);
 
 		console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
-		if(game.rnd.integerInRange(0, 1) == 0 || true){
+		if(game.rnd.integerInRange(0, 1) == 0){
 			source = sourcesfiable.create(posX, posY, "mediapart");
 			var color = "0000FF";
 		}else{
 			source = sourcesnonfiable.create(posX, posY, "mediapart");
 			var color = "FF0000";
 		}
-		source.anchor.setTo(0.5, 0.5);
-		source.body.setCircle(source.width/2);
-		source.addChild(cercles(color, 0.5, source, false));
+		source.body.setCircle(source.width);
+		source.anchor.setTo(0.5);
+		source.addChild(cercles(randArray(colors), 0.5, source, true));
+		// source.anchor.setTo(source.width/32);
 
+		// console.log(sourcesfiable.children.indexOf(player))
 		// sources.velocity.x = 200
 	}
 
@@ -207,11 +214,19 @@ function update(){
 
 function collideHandlerFiable(player, source){
 	source.kill();
-	nbsource--
+	nbsource--;
+	score ++;
+	player.width += 5;
+	player.height += 5;
+	// player.removeChild();
+	// player.addChild(cercles(randArray(colors), 1, player, false))
+	player.body.setCircle(player.width);
+	player.anchor.setTo((player.width)/32);
+	playerspeed += playerspeed/35;
+	console.log(score)
 }
 function collideHandlerNonFiable(player, source){
 	player.kill();
-
 }
 
 function render(){

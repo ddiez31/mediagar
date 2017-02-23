@@ -11,6 +11,18 @@ function preload(){
 	game.load.image("lavie", "assets/lavie.png");
 	game.load.image("reseauinter", "assets/reseauinternationnal.png");
 	game.load.image("legorafi", "assets/legorafi.png");
+	game.load.image("aujourdhui", "assets/aujourdhui.png");
+	game.load.image("sudouest", "assets/sudouest.png");
+	game.load.image("zelium", "assets/zelium.png");
+	game.load.image("rtbf", "assets/rtbf.png");
+	game.load.image("letemps", "assets/letemps.png");
+	game.load.image("topito", "assets/topito.png");
+	game.load.image("lefigaro", "assets/lefigaro.png");
+	game.load.image("atlantico", "assets/atlantico.png");
+	game.load.image("morandinisante", "assets/morandinisante.png");
+	game.load.image("hoaxbuster", "assets/hoaxbuster.png");
+	game.load.image("branched", "assets/branched.png");
+	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
 }
@@ -49,8 +61,8 @@ $(window).on('contextmenu', function(e){
 });
 
 var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
-var nonfiables = ["lagauche", "reseauinter", "legorafi"];
-var fiables = ["20min", "bfm", "mediapart", "lavie"];
+var nonfiables = ["lagauche", "reseauinter", "legorafi", "sudouest", "zelium", "topito", "morandinisante", "branched"];
+var fiables = ["20min", "bfm", "mediapart", "lavie", "aujourdhui", "rtbf", "lefigaro", "atlantico", "hoaxbuster", "lesiteinfo"];
 var signes = ["+", "-"];
 function randArray(input){
 	return input[Math.floor(Math.random()*input.length)]
@@ -60,13 +72,11 @@ function cercles(couleur, opacity, sprite, rand){
 	graphic = game.add.graphics();
 	if(sourcesfiable.children.indexOf(sprite) >-1 || sourcesnonfiable.children.indexOf(sprite) >-1){
 		graphic.lineStyle(5, 0x000000, 1);
-		// graphic.anchor.
 	}
 	graphic.beginFill("0x"+couleur, opacity);
-	// graphic.drawImag	e("image", 100, 100);
 
 	if(rand){
-		graphic.drawCircle(0, 0, game.rnd.integerInRange(sprite.width, sprite.width+sprite.width/10));
+		graphic.drawCircle(0, (source.height - source.width)/32, game.rnd.integerInRange(sprite.width, sprite.width+sprite.width/10));
 	}else{
 		graphic.drawCircle(0, 0, sprite.width*2);
 	}
@@ -123,11 +133,7 @@ extHaut = -(wheight/2)+200,
 extBas = wheight/2-200;
 
 function update(){
-
-	i++
-	
-	// game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
-
+	i++;
 	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
 	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
 	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
@@ -137,7 +143,6 @@ function update(){
 
 	if(i > 9999){
 		i = 0;
-		console.log('coucou i = '+i)
 	}
 
 	if(nbsource<20 && i%30===0){
@@ -152,10 +157,7 @@ function update(){
 		}else{
 			posY = game.rnd.integerInRange(player.position.y+150+player.width, player.position.y+300+player.width);
 		}
-		// randbet = game.rnd.integerInRange(-500, 500);
-		// posY = player.position.y - (- randbet);
-
-		// console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
+		
 		if(game.rnd.integerInRange(0, 1) == 0){
 			source = sourcesfiable.create(posX, posY, randArray(fiables));
 			var color = "0000FF";
@@ -163,21 +165,16 @@ function update(){
 			source = sourcesnonfiable.create(posX, posY, randArray(nonfiables));
 			var color = "FF0000";
 		}
-		source.anchor.setTo(0.5);
 		source.addChild(cercles(randArray(colors), 0.5, source, true));
+		source.anchor.setTo(0.5);
 		source.body.setCircle(source.width/2);
-		// source.anchor.setTo(source.width/32);
 		nbsourceText.text = nbtext + nbsource;
-
-		// console.log(sourcesfiable.children.indexOf(player))
-		// sources.velocity.x = 200
 	}
 	if(i%15===0 && source){
 		j=0;
 		k=0;
 		nbsource=0;
 		sourcesfiable.forEach(function(){
-			
 			if(game.rnd.integerInRange(0, 1) == 1){
 				sourcesfiable.children[j].checkWorldBounds = true;
 				sourcesfiable.children[j].outOfBoundsKill = true;
@@ -190,9 +187,7 @@ function update(){
 				}
 				
 			}
-			// console.log(sourcesfiable.children[j]);
 			if (sourcesfiable.children[j].alive) {
-				console.log('coucououtbound');
 				nbsource++;
 				nbsourceText.text = nbtext + nbsource;
 			}
@@ -212,15 +207,12 @@ function update(){
 
 				}
 			}
-			// console.log(sourcesfiable.children[j]);
 			if (sourcesnonfiable.children[k].alive) {
-				console.log('coucououtbound');
 				nbsource++;
 				nbsourceText.text = nbtext + nbsource;
 			}
 			k++;
 		});
-		console.log("nbsource = "+nbsource);
 	}
 }
 
@@ -233,8 +225,6 @@ function collideHandlerFiable(player, source){
 		player.width += 5;
 		player.height += 5;
 	}
-	// player.removeChild();
-	// player.addChild(cercles(randArray(colors), 1, player, false))
 	player.body.setCircle(player.width);
 	player.anchor.setTo((player.width)/32);
 	playerspeed += playerspeed/35;
@@ -243,7 +233,13 @@ function collideHandlerFiable(player, source){
 function collideHandlerNonFiable(player, source){
 	player.kill();
 }
+
+function debug(ceci){
+	game.debug.body(ceci);
+}
 function render(){
+	// sourcesfiable.forEachAlive(debug, this);
+	// sourcesnonfiable.forEachAlive(debug, this);
 	// game.debug.body(player);
 	// if(source){
 	// 	game.debug.body(source);

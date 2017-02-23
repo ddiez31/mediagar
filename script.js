@@ -10,6 +10,7 @@ function preload(){
 	game.load.image("lagauche", "assets/lagauchematuer.png");
 	game.load.image("lavie", "assets/lavie.png");
 	game.load.image("reseauinter", "assets/reseauinternationnal.png");
+	game.load.image("legorafi", "assets/legorafi.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
 }
@@ -24,6 +25,7 @@ posX,
 posY,
 nbsource = 0,
 i=0,
+j=0,
 wwidth,
 wheight,
 playerspeed= 600,
@@ -36,7 +38,7 @@ if ( window.addEventListener ) {
 	window.addEventListener("keydown", function(e){
 		kkeys.push( e.keyCode );
 		if ( kkeys.toString().indexOf( konami ) >= 0 ) {
-			console.log('coucoukonami');
+			koCode();
 			kkeys = [];
 		}
 	}, true);
@@ -47,7 +49,7 @@ $(window).on('contextmenu', function(e){
 });
 
 var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
-var nonfiables = ["lagauche", "reseauinter"];
+var nonfiables = ["lagauche", "reseauinter", "legorafi"];
 var fiables = ["20min", "bfm", "mediapart", "lavie"];
 var signes = ["+", "-"];
 function randArray(input){
@@ -71,7 +73,9 @@ function cercles(couleur, opacity, sprite, rand){
 	return graphic;
 }
 
-
+function koCode(){
+	console.log('coucoukonami');
+}
 
 function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -85,18 +89,14 @@ function create(){
 	sourcesfiable = game.add.group();
 	sourcesfiable.enableBody = true;
 	sourcesfiable.physicsBodyType = Phaser.Physics.ARCADE;
-	// sourcesfiable.setAll('anchor.x', 0.5);
-	// sourcesfiable.setAll('anchor.y', 0.5);
-	sourcesfiable.collideWorldBounds = true;
-	// sourcesfiable.setAll("setCircle", 100);
+	sourcesfiable.checkWorldBounds = true;
+	sourcesfiable.outOfBoundsKill = true;
 
 	sourcesnonfiable = game.add.group();
 	sourcesnonfiable.enableBody = true;
 	sourcesnonfiable.physicsBodyType = Phaser.Physics.ARCADE;
-	sourcesnonfiable.setAll('anchor.x', 0.5);
-	sourcesnonfiable.setAll('anchor.y', 0.5);
-	sourcesnonfiable.collideWorldBounds = true;
-	sourcesnonfiable.setAll("setCircle", 100);
+	sourcesnonfiable.checkWorldBounds = true;
+	sourcesnonfiable.outOfBoundsKill = true;
 	
 
 	player = game.add.sprite(0, 0);
@@ -110,6 +110,11 @@ function create(){
 
 	player.body.allowRotation = false;
 	game.camera.follow(player);
+
+	nbtext = "nombre de merdouille "
+	scortext = "score "
+	nbsourceText = game.add.text(-100, -50, nbtext + nbsource, { font: '34px Arial', fill: '#000' });
+	scoreText = game.add.text(-100, -10, scortext + score, { font: '34px Arial', fill: '#000' });
 }
 
 var extDroite = wwidth/2-200,
@@ -120,7 +125,7 @@ extBas = wheight/2-200;
 function update(){
 
 	i++
-
+	
 	// game.physics.arcade.collide(player , [sourcesnonfiable, sourcesfiable]);
 
 	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
@@ -135,69 +140,22 @@ function update(){
 		console.log('coucou i = '+i)
 	}
 
-	if(nbsource<10 && i%30===0){
+	if(nbsource<20 && i%30===0){
 
-		playpos = player.position.x + " X et Y " + player.position.y;
-		// console.log(playpos)
-		nbsource++;
-		// // var popctn = 0;
+		if(game.rnd.integerInRange(0, 1)==1){
+			posX = game.rnd.integerInRange(player.position.x-300-player.width, player.position.x-150-player.width);
+		}else{
+			posX = game.rnd.integerInRange(player.position.x+150+player.width, player.position.x+300+player.width);
+		}
+		if(game.rnd.integerInRange(0, 1)==1){
+			posY = game.rnd.integerInRange(player.position.y-300-player.width, player.position.y-150-player.width);
+		}else{
+			posY = game.rnd.integerInRange(player.position.y+150+player.width, player.position.y+300+player.width);
+		}
+		// randbet = game.rnd.integerInRange(-500, 500);
+		// posY = player.position.y - (- randbet);
 
-		// do{
-		// 	if(randArray(signes)=== "+"){
-		// 		randbet = game.rnd.integerInRange(200, 500);
-		// 		posX = player.position.x - (-randbet);
-		// 		if(posX < extDroite){
-		// 			var pop = false;
-		// 			nbsource--;
-		// 		}else{
-		// 			var pop = true;
-		// 		}
-		// 	}else{
-		// 		randbet = game.rnd.integerInRange(200, 500);
-		// 		posX = player.position.x - randbet;
-		// 		if(posX > extGauche){
-		// 			var pop = false;
-		// 			nbsource--;
-		// 		}else{
-		// 			var pop = true;
-		// 		}
-		// 	}
-		// 	console.log(pop);
-		// }while(!pop);
-		// // if(pop){
-		// // 	popctn++;
-		// // }
-
-		// do{
-		// 	if(randArray(signes)=== "+"){
-		// 		randbet = game.rnd.integerInRange(200, 500);
-		// 		posY = player.position.y - (-randbet);
-		// 		if(posY < extBas){
-		// 			var pop = false;
-		// 			nbsource--;
-		// 		}else{
-		// 			var pop = true;
-		// 		}
-		// 	}else{
-		// 		randbet = game.rnd.integerInRange(200, 500);
-		// 		posY = player.position.y - randbet;
-		// 		if(posY > extHaut){
-		// 			var pop = false;
-		// 			nbsource--;
-		// 		}else{
-		// 			var pop = true;
-		// 		}
-		// 	}
-		// }while(!pop);
-		// // if(pop){
-		// // 	popctn++;
-		// // }
-		randbet = game.rnd.integerInRange(-500, 500);
-		posX = player.position.x - (- randbet);
-		randbet = game.rnd.integerInRange(-500, 500);
-		posY = player.position.y - (- randbet);
-
-		console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
+		// console.log("pos X " + Math.floor(posX) + " pos Y " + Math.floor(posY));
 		if(game.rnd.integerInRange(0, 1) == 0){
 			source = sourcesfiable.create(posX, posY, randArray(fiables));
 			var color = "0000FF";
@@ -209,14 +167,60 @@ function update(){
 		source.addChild(cercles(randArray(colors), 0.5, source, true));
 		source.body.setCircle(source.width/2);
 		// source.anchor.setTo(source.width/32);
-
+		nbsourceText.text = nbtext + nbsource;
 
 		// console.log(sourcesfiable.children.indexOf(player))
 		// sources.velocity.x = 200
 	}
+	if(i%15===0 && source){
+		j=0;
+		k=0;
+		nbsource=0;
+		sourcesfiable.forEach(function(){
+			
+			if(game.rnd.integerInRange(0, 1) == 1){
+				sourcesfiable.children[j].checkWorldBounds = true;
+				sourcesfiable.children[j].outOfBoundsKill = true;
+				if(game.rnd.integerInRange(1, 100) > 10){
+					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-200, 200);
+					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-200, 200);
+				}else{
+					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-300, 300);
+					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-300, 300);
+				}
+				
+			}
+			// console.log(sourcesfiable.children[j]);
+			if (sourcesfiable.children[j].alive) {
+				console.log('coucououtbound');
+				nbsource++;
+				nbsourceText.text = nbtext + nbsource;
+			}
+			j++;
+		});
+		sourcesnonfiable.forEach(function(){
+			
+			if(game.rnd.integerInRange(0, 1) == 1){
+				sourcesnonfiable.children[k].checkWorldBounds = true;
+				sourcesnonfiable.children[k].outOfBoundsKill = true;
+				if(game.rnd.integerInRange(1, 100) > 10){
+					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-200, 200);
+					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-200, 200);
+				}else{
+					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-300, 300);
+					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-300, 300);
 
-	if(i%60===0){
-
+				}
+			}
+			// console.log(sourcesfiable.children[j]);
+			if (sourcesnonfiable.children[k].alive) {
+				console.log('coucououtbound');
+				nbsource++;
+				nbsourceText.text = nbtext + nbsource;
+			}
+			k++;
+		});
+		console.log("nbsource = "+nbsource);
 	}
 }
 
@@ -224,19 +228,21 @@ function collideHandlerFiable(player, source){
 	source.kill();
 	nbsource--;
 	score ++;
-	player.width += 5;
-	player.height += 5;
+	nbsourceText.text = nbtext + nbsource;
+	if(player.width < 125){
+		player.width += 5;
+		player.height += 5;
+	}
 	// player.removeChild();
 	// player.addChild(cercles(randArray(colors), 1, player, false))
 	player.body.setCircle(player.width);
 	player.anchor.setTo((player.width)/32);
 	playerspeed += playerspeed/35;
-	console.log(score)
+	scoreText.text = scortext + score;
 }
 function collideHandlerNonFiable(player, source){
 	player.kill();
 }
-
 function render(){
 	// game.debug.body(player);
 	// if(source){
@@ -245,7 +251,6 @@ function render(){
 	// if(sourcesfiable){
 	// 	sourcesfiable.forEach(game.debug.body(sourcesfiable.this));
 	// }
-
 }
 
 $(document).ready(function(){

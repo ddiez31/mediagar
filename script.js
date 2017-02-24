@@ -32,13 +32,15 @@ function preload(){
 	game.load.spritesheet("explosion3", "/assets/explosiion.png", 47, 58, 25);
 	game.load.spritesheet("explosion4", "/assets/explosion-sprite.png", 96, 96, 15);
 	game.load.spritesheet("explosion5", "/assets/explosang.png", 128, 128, 16);
+	game.load.spritesheet("explosion6", "/assets/nucleairedessus.png", 128, 128, 20);
+	game.load.spritesheet("explosion7", "/assets/exploprout.png", 100, 100, 11);
 }
 
 var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
 var nonfiables = ["lagauche", "reseauinter", "legorafi", "sudouest", "zelium", "topito", "morandinisante", "branched"];
 var fiables = ["20min", "bfm", "mediapart", "lavie", "aujourdhui", "rtbf", "lefigaro", "atlantico", "hoaxbuster", "lesiteinfo"];
 var signes = ["+", "-"];
-var explosions = [["explosion1", 6, 0.5], ["explosion2", 2, 0.75], ["explosion3", 8, 0.75], ["explosion4", 3, 0.95], ["explosion5", 3, 0.5]]
+var explosions = [["explosion1", 6, 0.5], ["explosion2", 2, 0.75], ["explosion3", 8, 0.75], ["explosion4", 3, 0.95], ["explosion5", 3, 0.5], ["explosion6", 5, 0.65], ["explosion7", 5, 0.5]];
 function randArray(input){
 	return input[Math.floor(Math.random()*input.length)]
 }

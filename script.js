@@ -157,7 +157,6 @@ function create(){
 	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
 	nbTeleportText.fixedToCamera = true;
-	
 }
 
 var extDroite = wwidth/2-200,

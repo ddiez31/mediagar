@@ -25,7 +25,11 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
-	game.load.spritesheet("explosion", "/assets/explosion.png", 64, 64);
+	game.load.spritesheet("explosion", "/assets/nucleaire.png", 320, 233, 25);
+	game.load.spritesheet("boom", "/assets/explosion.png", 64, 64, 24);
+	game.load.spritesheet("bam", "/assets/explosiion.png", 58, 47, 25);
+	game.load.spritesheet("bim", "/assets/explosion-sprite.png", 96, 96, 15);
+	game.load.spritesheet("bum", "/assets/EplosionFX.png", 220, 243, 6);
 }
 
 var
@@ -135,7 +139,7 @@ function create(){
 	nbTeleportText.fixedToCamera = true;
 
 	explosion = game.add.sprite(100, 100, 'explosion');
-	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 10, false);
+	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], 10, false);
 	game.physics.arcade.enable(explosion);
 	explosion.enableBody = true;
 	explosion.kill();
@@ -268,8 +272,8 @@ function collideHandlerNonFiable(player, source){
 	explosion.revive();
 	explosion.x = player.x;
 	explosion.y = player.y;
-	explosion.scale.setTo(5);
-	explosion.anchor.setTo(0.5);
+	explosion.scale.setTo(1);
+	explosion.anchor.setTo(0.5, 1);
 	explosion.animations.play("boom_left");
 }
 

@@ -27,9 +27,11 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
+	game.load.spritesheet("explosion", "/assets/explosion.png", 64, 64);
 }
 
 var
+explosion,
 player,
 menu,
 graphic,
@@ -150,6 +152,12 @@ function create(){
 	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
 	nbTeleportText.fixedToCamera = true;
+
+	explosion = game.add.sprite(100, 100, 'explosion');
+	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23], 10, false);
+	game.physics.arcade.enable(explosion);
+	explosion.enableBody = true;
+	explosion.kill();
 }
 
 var extDroite = wwidth/2-200,
@@ -289,6 +297,12 @@ function collideHandlerFiable(player, source){
 }
 function collideHandlerNonFiable(player, source){
 	player.kill();
+	explosion.revive();
+	explosion.x = player.x;
+	explosion.y = player.y;
+	explosion.scale.setTo(5);
+	explosion.anchor.setTo(0.5);
+	explosion.animations.play("boom_left");
 }
 
 function debug(ceci){

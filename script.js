@@ -36,10 +36,12 @@ source,
 posX,
 posY,
 nbsource = 0,
+nbteleport = 0,
 i=0,
 j=0,
 wwidth,
 wheight,
+teleporting= true,
 playerspeed= 600,
 score= 0,
 balls;
@@ -91,8 +93,8 @@ function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	// game.stage.backgroundColor = '#FFFFFF';
-	fond = game.add.tileSprite(-1000, -1000, 2000, 2000, 'fond');
-	game.world.setBounds(-1000, -1000, 2000, 2000);
+	fond = game.add.tileSprite(-2000, -2000, 4000, 4000, 'fond');
+	game.world.setBounds(-2000, -2000, 4000, 4000);
 	wwidth = game.world.width;
 	wheight = game.world.height;
 
@@ -108,8 +110,8 @@ function create(){
 	sourcesnonfiable.checkWorldBounds = true;
 	sourcesnonfiable.outOfBoundsKill = true;
 	
-
-	player = game.add.sprite(0, 0);
+	playerballs = game.add.group();
+	player = playerballs.create(0, 0);
 	player.anchor.setTo((player.width)/32);
 	game.physics.arcade.enable(player);
 	player.enableBody = true;
@@ -119,12 +121,16 @@ function create(){
 
 
 	player.body.allowRotation = false;
-	game.camera.follow(player);
-
+	camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 	nbtext = "nombre de merdouille "
 	scortext = "score "
-	nbsourceText = game.add.text(-100, -50, nbtext + nbsource, { font: '34px Arial', fill: '#000' });
-	scoreText = game.add.text(-100, -10, scortext + score, { font: '34px Arial', fill: '#000' });
+	teletext = "teleportation "
+	nbsourceText = game.add.text(20, 20, nbtext + nbsource, { font: '36px Arial', fill: '#000' });
+	nbsourceText.fixedToCamera = true;
+	scoreText = game.add.text(20, 50, scortext + score, { font: '36px Arial', fill: '#000' });
+	scoreText.fixedToCamera = true;
+	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
+	nbTeleportText.fixedToCamera = true;
 }
 
 var extDroite = wwidth/2-200,
@@ -140,6 +146,7 @@ function update(){
 	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
 
 	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+	// game.physics.arcade.moveToPointer(player, playerspeed);
 
 	if(i > 9999){
 		i = 0;
@@ -175,17 +182,16 @@ function update(){
 		k=0;
 		nbsource=0;
 		sourcesfiable.forEach(function(){
-			if(game.rnd.integerInRange(0, 1) == 1){
 				sourcesfiable.children[j].checkWorldBounds = true;
 				sourcesfiable.children[j].outOfBoundsKill = true;
-				if(game.rnd.integerInRange(1, 100) > 10){
+			if(game.rnd.integerInRange(0, 1) == 1){
+				if(game.rnd.integerInRange(1, 100) > 20){
 					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-200, 200);
 					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-200, 200);
 				}else{
-					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-300, 300);
-					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-300, 300);
+					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-400, 400);
+					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-400, 400);
 				}
-				
 			}
 			if (sourcesfiable.children[j].alive) {
 				nbsource++;
@@ -198,13 +204,12 @@ function update(){
 			if(game.rnd.integerInRange(0, 1) == 1){
 				sourcesnonfiable.children[k].checkWorldBounds = true;
 				sourcesnonfiable.children[k].outOfBoundsKill = true;
-				if(game.rnd.integerInRange(1, 100) > 10){
+				if(game.rnd.integerInRange(1, 100) > 5){
 					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-200, 200);
 					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-200, 200);
 				}else{
-					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-300, 300);
-					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-300, 300);
-
+					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-350, 350);
+					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-350, 350);
 				}
 			}
 			if (sourcesnonfiable.children[k].alive) {
@@ -214,6 +219,22 @@ function update(){
 			k++;
 		});
 	}
+	if(game.input.mousePointer.isDown && teleporting && nbteleport > 0 && !game.pause){
+		teleporting = false;
+		teleport();
+	}if(game.input.mousePointer.isUp){
+		teleporting = true;
+	}
+	if(game.paused){
+		
+	}
+}
+
+function teleport(){
+	player.x = game.input.mousePointer.worldX;
+	player.y = game.input.mousePointer.worldY;
+	nbteleport--;
+	nbTeleportText.text = teletext + nbteleport;
 }
 
 function collideHandlerFiable(player, source){
@@ -221,6 +242,10 @@ function collideHandlerFiable(player, source){
 	nbsource--;
 	score ++;
 	nbsourceText.text = nbtext + nbsource;
+	if(score%10===0){
+		nbteleport++;
+		nbTeleportText.text = teletext + nbteleport;
+	}
 	if(player.width < 125){
 		player.width += 5;
 		player.height += 5;
@@ -238,8 +263,8 @@ function debug(ceci){
 	game.debug.body(ceci);
 }
 function render(){
-	sourcesfiable.forEachAlive(debug, this);
-	sourcesnonfiable.forEachAlive(debug, this);
+	// sourcesfiable.forEachAlive(debug, this);
+	// sourcesnonfiable.forEachAlive(debug, this);
 	// game.debug.body(player);
 	// if(source){
 	// 	game.debug.body(source);

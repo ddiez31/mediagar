@@ -46,6 +46,7 @@ function randArray(input){
 var
 player,
 menu,
+telported = false,
 graphic,
 fond,
 sources,
@@ -58,7 +59,7 @@ i=0,
 j=0,
 wwidth,
 wheight,
-teleporting= true,
+teleporting= false,
 playerspeed= 600,
 score= 0,
 balls;
@@ -98,15 +99,17 @@ function koCode(){
 	console.log('coucoukonami');
 }
 
-$(window).on("keypress", function (e) {
-	console.log(e.which)
-	if(e.which == 112){
+function pausage(e) {
+	if(e.which == 112 || e == "ESC"){
 	game.paused = true;
 
 	menu = game.add.sprite(w/2, h/2, 'menu');
 	menu.anchor.setTo(0.5, 0.5);
 	}
 
+}
+$(window).on("keypress", function(event){
+	pausage(event);
 });
 
 function create(){
@@ -171,7 +174,18 @@ function update(){
 	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
 	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
 
-	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+	if(game.input.mousePointer.isDown && nbteleport > 0 && !teleporting && !game.pause){
+		telported = true;
+		teleporting = true;
+		player.body.velocity.x = 0;
+		player.body.velocity.y = 0;
+		player.rotation = false;
+	}if(game.input.mousePointer.isUp && teleporting){
+		teleporting = false;
+		teleport();
+	}if(!teleporting){
+		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+	}
 	// game.physics.arcade.moveToPointer(player, playerspeed);
 
 	if(i > 9999){
@@ -245,12 +259,7 @@ function update(){
 			k++;
 		});
 	}
-	if(game.input.mousePointer.isDown && teleporting && nbteleport > 0 && !game.pause){
-		teleporting = false;
-		teleport();
-	}if(game.input.mousePointer.isUp){
-		teleporting = true;
-	}
+	
 }
 
 function unpause(event){
@@ -265,6 +274,8 @@ function unpause(event){
 			game.paused = false;
 		}
 		else{
+			menu
+			console.log(game.input.mousePointer.x, game.input.mousePointer.y)
 		}
 	}
 };
@@ -300,8 +311,11 @@ function collideHandlerNonFiable(player, source){
 	
 	explosion = game.add.sprite(100, 100, randexplotabl[0]);
 	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], 10, false);
+	// explosion.fixedToCamera = true;
 	game.physics.arcade.enable(explosion);
 	explosion.enableBody = true;
+	// explosion.x = player.worldX
+	// explosion.y = player.worldY
 	explosion.x = player.x;
 	explosion.y = player.y;
 	explosion.scale.setTo(randexplotabl[1]);

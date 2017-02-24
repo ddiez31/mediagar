@@ -103,16 +103,46 @@ function koCode(){
 
 function pausage(e) {
 	if(e.which == 112 || e == "ESC"){
-	game.paused = true;
-
-	menu = game.add.sprite(w/2, h/2, 'menu');
-	menu.anchor.setTo(0.5, 0.5);
+		game.paused = true;
+		menu = game.add.sprite(player.position.x, player.position.y, 'menu');
+		menu.anchor.setTo(0.5, 0.5);
+		menu.fixedToCamera = true;
 	}
 
 }
-$(window).on("keypress", function(event){
-	pausage(event);
+
+function unpause(e){
+	if(game.paused){
+		var x1 = w/2 - 270/2, x2 = w/2 + 270/2,
+		y1 = h/2 - 180/2, y2 = h/2 + 180/2;
+
+		if(!(e.x > x1 && e.x < x2 && e.y > y1 && e.y < y2) ){
+			menu.destroy();
+			buttons.destroy();
+			game.paused = false;
+		}else{
+			console.log(game.input.mousePointer.x, game.input.mousePointer.y)
+		}
+	}
+};
+function fullscreen(e){
+	if(e.which === 102){
+		if (game.scale.isFullScreen){
+			game.scale.stopFullScreen();
+		}else{
+			game.scale.startFullScreen(false);
+		}
+	}
+}
+$(window).on("keypress", function(e){
+	pausage(e);
+	fullscreen(e);
 });
+$("caneva").on('click', function(){
+	elem = $("body");
+	req = elem.requestFullScreen || elem.webkitRequestFullScreen || elem.mozRequestFullScreen;
+	req.call(elem);
+})
 
 function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -122,6 +152,9 @@ function create(){
 	game.world.setBounds(-1500, -1500, 3000, 3000);
 	wwidth = game.world.width;
 	wheight = game.world.height;
+	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+
+
 
 	buttons	= game.add.group();
 	buttons.x = w/2;
@@ -264,23 +297,7 @@ function update(){
 	
 }
 
-function unpause(event){
-	if(game.paused){
-		var x1 = w/2 - 270/2, x2 = w/2 + 270/2,
-		y1 = h/2 - 180/2, y2 = h/2 + 180/2;
 
-		if(!(event.x > x1 && event.x < x2 && event.y > y1 && event.y < y2) ){
-			menu.destroy();
-			buttons.destroy();
-
-			game.paused = false;
-		}
-		else{
-			menu
-			console.log(game.input.mousePointer.x, game.input.mousePointer.y)
-		}
-	}
-};
 
 function teleport(){
 	player.x = game.input.mousePointer.worldX;
@@ -298,7 +315,7 @@ function collideHandlerFiable(player, source){
 		nbteleport++;
 		nbTeleportText.text = teletext + nbteleport;
 	}
-	if(player.width < 125){
+	if(player.width < 150){
 		player.width += 5;
 		player.height += 5;
 	}

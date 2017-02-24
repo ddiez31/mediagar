@@ -27,11 +27,20 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
-	game.load.spritesheet("explosion", "/assets/nucleaire.png", 320, 233, 25);
-	game.load.spritesheet("boom", "/assets/explosion.png", 64, 64, 24);
-	game.load.spritesheet("bam", "/assets/explosiion.png", 58, 47, 25);
-	game.load.spritesheet("bim", "/assets/explosion-sprite.png", 96, 96, 15);
-	game.load.spritesheet("bum", "/assets/EplosionFX.png", 220, 243, 6);
+	game.load.spritesheet("explosion1", "/assets/explosion.png", 64, 64, 24);
+	game.load.spritesheet("explosion2", "/assets/nucleaire.png", 320, 233, 25);
+	game.load.spritesheet("explosion3", "/assets/explosiion.png", 47, 58, 25);
+	game.load.spritesheet("explosion4", "/assets/explosion-sprite.png", 96, 96, 15);
+	game.load.spritesheet("explosion5", "/assets/explosang.png", 128, 128, 16);
+}
+
+var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
+var nonfiables = ["lagauche", "reseauinter", "legorafi", "sudouest", "zelium", "topito", "morandinisante", "branched"];
+var fiables = ["20min", "bfm", "mediapart", "lavie", "aujourdhui", "rtbf", "lefigaro", "atlantico", "hoaxbuster", "lesiteinfo"];
+var signes = ["+", "-"];
+var explosions = [["explosion1", 6, 0.5], ["explosion2", 2, 0.75], ["explosion3", 8, 0.75], ["explosion4", 3, 0.95], ["explosion5", 3, 0.5]]
+function randArray(input){
+	return input[Math.floor(Math.random()*input.length)]
 }
 
 var
@@ -70,13 +79,6 @@ $(window).on('contextmenu', function(e){
 	e.preventDefault();
 });
 
-var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];
-var nonfiables = ["lagauche", "reseauinter", "legorafi", "sudouest", "zelium", "topito", "morandinisante", "branched"];
-var fiables = ["20min", "bfm", "mediapart", "lavie", "aujourdhui", "rtbf", "lefigaro", "atlantico", "hoaxbuster", "lesiteinfo"];
-var signes = ["+", "-"];
-function randArray(input){
-	return input[Math.floor(Math.random()*input.length)]
-}
 
 function cercles(couleur, opacity, sprite, rand){
 	graphic = game.add.graphics();
@@ -155,11 +157,7 @@ function create(){
 	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
 	nbTeleportText.fixedToCamera = true;
-	explosion = game.add.sprite(100, 100, 'explosion');
-	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], 10, false);
-	game.physics.arcade.enable(explosion);
-	explosion.enableBody = true;
-	explosion.kill();
+	
 }
 
 var extDroite = wwidth/2-200,
@@ -299,11 +297,16 @@ function collideHandlerFiable(player, source){
 }
 function collideHandlerNonFiable(player, source){
 	player.kill();
-	explosion.revive();
+	randexplotabl = randArray(explosions)
+	
+	explosion = game.add.sprite(100, 100, randexplotabl[0]);
+	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], 10, false);
+	game.physics.arcade.enable(explosion);
+	explosion.enableBody = true;
 	explosion.x = player.x;
 	explosion.y = player.y;
-	explosion.scale.setTo(1);
-	explosion.anchor.setTo(0.5, 1);
+	explosion.scale.setTo(randexplotabl[1]);
+	explosion.anchor.setTo(0.5, randexplotabl[2]);
 	explosion.animations.play("boom_left");
 }
 

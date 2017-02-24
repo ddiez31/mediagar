@@ -1,6 +1,8 @@
 
 // var game = new Phaser.Game(900, 600, Phaser.AUTO, "#app", {preload: preload, create: create, update: update});
-var game = new Phaser.Game($(window).width(), $(window).height(), Phaser.AUTO, "#app", {preload: preload, create: create, update: update, render: render});
+var w = $(window).width();
+var h = $(window).height();
+var game = new Phaser.Game(w, h, Phaser.AUTO, "#app", {preload: preload, create: create, update: update, render: render});
 
 
 function preload(){
@@ -33,8 +35,8 @@ function preload(){
 }
 
 var
-explosion,
 player,
+menu,
 graphic,
 fond,
 sources,
@@ -82,7 +84,6 @@ function cercles(couleur, opacity, sprite, rand){
 		graphic.lineStyle(5, 0x000000, 1);
 	}
 	graphic.beginFill("0x"+couleur, opacity);
-
 	if(rand){
 		graphic.drawCircle(0, (source.height - source.width)/32, game.rnd.integerInRange(sprite.width, sprite.width+sprite.width/10));
 	}else{
@@ -95,14 +96,31 @@ function koCode(){
 	console.log('coucoukonami');
 }
 
+$(window).on("keypress", function (e) {
+	console.log(e.which)
+	if(e.which == 112){
+	game.paused = true;
+
+	menu = game.add.sprite(w/2, h/2, 'menu');
+	menu.anchor.setTo(0.5, 0.5);
+	}
+
+});
+
 function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
 
 	// game.stage.backgroundColor = '#FFFFFF';
-	fond = game.add.tileSprite(-2000, -2000, 4000, 4000, 'fond');
-	game.world.setBounds(-2000, -2000, 4000, 4000);
+	fond = game.add.tileSprite(-1500, -1500, 3000, 3000, 'fond');
+	game.world.setBounds(-1500, -1500, 3000, 3000);
 	wwidth = game.world.width;
 	wheight = game.world.height;
+
+	buttons	= game.add.group();
+	buttons.x = w/2;
+
+	
+	game.input.onDown.add(unpause, self);
 
 	sourcesfiable = game.add.group();
 	sourcesfiable.enableBody = true;
@@ -137,10 +155,9 @@ function create(){
 	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
 	nbTeleportText.fixedToCamera = true;
-
+	
 	explosion = game.add.sprite(100, 100, 'explosion5');
 	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25], 10, false);
-	game.physics.arcade.enable(explosion);
 	explosion.enableBody = true;
 	explosion.kill();
 }
@@ -194,8 +211,8 @@ function update(){
 		k=0;
 		nbsource=0;
 		sourcesfiable.forEach(function(){
-				sourcesfiable.children[j].checkWorldBounds = true;
-				sourcesfiable.children[j].outOfBoundsKill = true;
+			sourcesfiable.children[j].checkWorldBounds = true;
+			sourcesfiable.children[j].outOfBoundsKill = true;
 			if(game.rnd.integerInRange(0, 1) == 1){
 				if(game.rnd.integerInRange(1, 100) > 20){
 					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-200, 200);
@@ -237,10 +254,23 @@ function update(){
 	}if(game.input.mousePointer.isUp){
 		teleporting = true;
 	}
-	if(game.paused){
-		
-	}
 }
+
+function unpause(event){
+	if(game.paused){
+		var x1 = w/2 - 270/2, x2 = w/2 + 270/2,
+		y1 = h/2 - 180/2, y2 = h/2 + 180/2;
+
+		if(!(event.x > x1 && event.x < x2 && event.y > y1 && event.y < y2) ){
+			menu.destroy();
+			buttons.destroy();
+
+			game.paused = false;
+		}
+		else{
+		}
+	}
+};
 
 function teleport(){
 	player.x = game.input.mousePointer.worldX;

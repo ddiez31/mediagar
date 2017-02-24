@@ -27,13 +27,13 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
-	game.load.spritesheet("explosion1", "/assets/explosion.png", 64, 64, 24);
-	game.load.spritesheet("explosion2", "/assets/nucleaire.png", 320, 233, 25);
-	game.load.spritesheet("explosion3", "/assets/explosiion.png", 47, 58, 25);
-	game.load.spritesheet("explosion4", "/assets/explosion-sprite.png", 96, 96, 15);
-	game.load.spritesheet("explosion5", "/assets/explosang.png", 128, 128, 16);
-	game.load.spritesheet("explosion6", "/assets/nucleairedessus.png", 128, 128, 20);
-	game.load.spritesheet("explosion7", "/assets/exploprout.png", 100, 100, 11);
+	game.load.spritesheet("explosion1", "assets/explosion.png", 64, 64, 24);
+	game.load.spritesheet("explosion2", "assets/nucleaire.png", 320, 233, 25);
+	game.load.spritesheet("explosion3", "assets/explosiion.png", 47, 58, 25);
+	game.load.spritesheet("explosion4", "assets/explosion-sprite.png", 96, 96, 15);
+	game.load.spritesheet("explosion5", "assets/explosang.png", 128, 128, 16);
+	game.load.spritesheet("explosion6", "assets/nucleairedessus.png", 128, 128, 20);
+	game.load.spritesheet("explosion7", "assets/exploprout.png", 100, 100, 11);
 }
 
 var colors = ["FF0000", "00FF00", "0000FF", "FFFF00", "00FFFF"];

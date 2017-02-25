@@ -230,24 +230,21 @@ function update(){
 	// 	button.alpha = 0.5;
 	// }
 
-	if(game.input.mousePointer.isDown){
-		if(!player.alive){
-			playercreation();
-		}else if(nbteleport > 0 && !teleporting && !game.pause){
-			prevspeed = playerspeed;
-			playerspeed += 1200;
-			teleporting = true;
-			// player.body.velocity.x += 100;
-			// player.body.velocity.y += 100;
-			// player.rotation = false;
-		}
-
+	if(game.input.mousePointer.isDown && !player.alive){
+		playercreation();
+	}
+	if(game.input.mousePointer.isDown && nbteleport > 0 && !teleporting && !game.pause){
+		prevspeed = playerspeed;
+		playerspeed += 1200;
+		teleporting = true;
+		// player.body.velocity.x += 100;
+		// player.body.velocity.y += 100;
+		// player.rotation = false;
 	}if(game.input.mousePointer.isUp && teleporting){
 		teleport();
 		teleporting = false;
 		playerspeed = prevspeed;
 	}
-
 	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
 	// game.physics.arcade.moveToPointer(player, playerspeed);
 

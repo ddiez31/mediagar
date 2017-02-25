@@ -27,6 +27,7 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
+	game.load.spritesheet("button", "assets/buttons.png", 125, 57);
 	game.load.spritesheet("explosion1", "assets/explosion.png", 64, 64, 24);
 	game.load.spritesheet("explosion2", "assets/nucleaire.png", 320, 233, 25);
 	game.load.spritesheet("explosion3", "assets/explosiion.png", 47, 58, 25);
@@ -48,7 +49,6 @@ function randArray(input){
 var
 player,
 menu,
-telported = false,
 graphic,
 fond,
 sources,
@@ -63,6 +63,7 @@ wwidth,
 wheight,
 teleporting= false,
 playerspeed= 600,
+snonfiaspeed= 200,
 score= 0,
 balls;
 
@@ -101,48 +102,58 @@ function koCode(){
 	console.log('coucoukonami');
 }
 
-function pausage(e) {
-	if(e.which == 112 || e == "ESC"){
-		game.paused = true;
-		menu = game.add.sprite(player.position.x, player.position.y, 'menu');
-		menu.anchor.setTo(0.5, 0.5);
-		menu.fixedToCamera = true;
-	}
-
-}
-
-function unpause(e){
-	if(game.paused){
-		var x1 = w/2 - 270/2, x2 = w/2 + 270/2,
-		y1 = h/2 - 180/2, y2 = h/2 + 180/2;
-
-		if(!(e.x > x1 && e.x < x2 && e.y > y1 && e.y < y2) ){
-			menu.destroy();
-			buttons.destroy();
-			game.paused = false;
-		}else{
-			console.log(game.input.mousePointer.x, game.input.mousePointer.y)
-		}
-	}
-};
-function fullscreen(e){
-	if(e.which === 102){
-		if (game.scale.isFullScreen){
-			game.scale.stopFullScreen();
-		}else{
-			game.scale.startFullScreen(false);
-		}
-	}
-}
 $(window).on("keypress", function(e){
-	pausage(e);
-	fullscreen(e);
+	if(!game.paused && e.which == 112){
+		pausage(e);
+	}
+	else if(game.paused && e.which == 112){
+		unpause(e);
+	}
 });
-$("caneva").on('click', function(){
-	elem = $("body");
-	req = elem.requestFullScreen || elem.webkitRequestFullScreen || elem.mozRequestFullScreen;
-	req.call(elem);
-})
+
+function pausage() {
+	// console.log(camera.position.x);
+	game.paused = true;
+}
+
+function unpause(){
+	game.paused = false;
+	// if(true){
+	// }else{
+	// }
+};
+
+function over() {
+	console.log('button over');
+}
+
+function out() {
+	console.log('button out');
+}
+
+function playercreation(){
+	if(!player){
+		player = playerballs.create(game.camera.x + 600, game.camera.y + 300);
+		player.anchor.setTo((player.width)/32);
+		game.physics.arcade.enable(player);
+		player.enableBody = true;
+		player.body.collideWorldBounds = true;
+		player.addChild(cercles(randArray(colors), 1, player, false));
+		player.addChild(game.add.text(-player.width, -player.height/3, "PSEUDO", { font: '15px Arial', fill: '#FFF' }));
+		player.body.setCircle(player.width);
+		player.body.allowRotation = false;
+	}else if(!player.alive){
+		explosion.kill();
+		player.revive();
+		player.position.x = 0;
+		player.position.x = 0;
+		sources.forEach(function(e){
+			e.forEach(function(e){
+				e.kill();
+			})
+		})
+	}
+}
 
 function create(){
 	game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -152,49 +163,53 @@ function create(){
 	game.world.setBounds(-1500, -1500, 3000, 3000);
 	wwidth = game.world.width;
 	wheight = game.world.height;
-	game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 
-
-
-	buttons	= game.add.group();
-	buttons.x = w/2;
-
-	
-	game.input.onDown.add(unpause, self);
-
-	sourcesfiable = game.add.group();
-	sourcesfiable.enableBody = true;
-	sourcesfiable.physicsBodyType = Phaser.Physics.ARCADE;
-	sourcesfiable.checkWorldBounds = true;
-	sourcesfiable.outOfBoundsKill = true;
-
-	sourcesnonfiable = game.add.group();
-	sourcesnonfiable.enableBody = true;
-	sourcesnonfiable.physicsBodyType = Phaser.Physics.ARCADE;
-	sourcesnonfiable.checkWorldBounds = true;
-	sourcesnonfiable.outOfBoundsKill = true;
-	
 	playerballs = game.add.group();
-	player = playerballs.create(0, 0);
-	player.anchor.setTo((player.width)/32);
-	game.physics.arcade.enable(player);
-	player.enableBody = true;
-	player.body.collideWorldBounds = true;
-	player.addChild(cercles(randArray(colors), 1, player, false));
-	player.body.setCircle(player.width);
+	buttons	= game.add.group();
+	sources = game.add.group();
+	sourcesfiable = game.add.group();
+	sourcesnonfiable = game.add.group();
+	sources.add(sourcesfiable);
+	sources.add(sourcesnonfiable);
 
+	// menu boutons j'abandone pour l'instant !
+	// button1 = buttons.create(game.add.button(game.camera.x, game.camera.y, 'button', function(){
+	// 	player.visible =! player.visible;
+	// 	console.log(game.camera.x, game.camera.y);
+	// }, this, 5, 4, 6));
+	// // button1.onInputOver.add(over, this);
+	// // button1.onInputOut.add(out, this);
+	// button1.name = 'sky';
+	// button1.anchor.setTo(0.5, 0.5);
+	// button1.scale.setTo(5, 5);
+	// button1.fixedToCamera = true;
+	// button1.visible = false;
+	// buttons.forEach(function(e){
+	// 	var name = e.name;
+	// 	e.addChild(game.add.text(game.camera.x, game.camera.y, "button", { font: '15px Arial', fill: '#FFF' }));
+	// });
 
-	player.body.allowRotation = false;
+	sources.forEach(function(sourcetype){
+		sourcetype.enableBody = true;
+		sourcetype.physicsBodyType = Phaser.Physics.ARCADE;
+		sourcetype.checkWorldBounds = true;
+		sourcetype.outOfBoundsKill = true;	
+	})
+
+	playercreation();
+
 	camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-	nbtext = "nombre de merdouille "
-	scortext = "score "
-	teletext = "teleportation "
+	nbtext = "nb de sources ";
+	scortext = "score ";
+	teletext = "nb de teleportation ";
 	nbsourceText = game.add.text(20, 20, nbtext + nbsource, { font: '36px Arial', fill: '#000' });
 	nbsourceText.fixedToCamera = true;
 	scoreText = game.add.text(20, 50, scortext + score, { font: '36px Arial', fill: '#000' });
 	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
 	nbTeleportText.fixedToCamera = true;
+
+	// game.input.addMoveCallback(this);
 }
 
 var extDroite = wwidth/2-200,
@@ -209,18 +224,31 @@ function update(){
 	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
 	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
 
-	if(game.input.mousePointer.isDown && nbteleport > 0 && !teleporting && !game.pause){
-		telported = true;
-		teleporting = true;
-		player.body.velocity.x = 0;
-		player.body.velocity.y = 0;
-		player.rotation = false;
+	// if (true){
+	// 	button.alpha = 1;
+	// }else{
+	// 	button.alpha = 0.5;
+	// }
+
+	if(game.input.mousePointer.isDown){
+		if(!player.alive){
+			playercreation();
+		}else if(nbteleport > 0 && !teleporting && !game.pause){
+			prevspeed = playerspeed;
+			playerspeed += 1200;
+			teleporting = true;
+			// player.body.velocity.x += 100;
+			// player.body.velocity.y += 100;
+			// player.rotation = false;
+		}
+
 	}if(game.input.mousePointer.isUp && teleporting){
-		teleporting = false;
 		teleport();
-	}if(!teleporting){
-		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+		teleporting = false;
+		playerspeed = prevspeed;
 	}
+
+	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
 	// game.physics.arcade.moveToPointer(player, playerspeed);
 
 	if(i > 9999){
@@ -230,14 +258,14 @@ function update(){
 	if(nbsource<20 && i%30===0){
 
 		if(game.rnd.integerInRange(0, 1)==1){
-			posX = game.rnd.integerInRange(player.position.x-300-player.width, player.position.x-150-player.width);
+			posX = game.rnd.integerInRange(player.position.x-400-player.width, player.position.x-175-player.width);
 		}else{
-			posX = game.rnd.integerInRange(player.position.x+150+player.width, player.position.x+300+player.width);
+			posX = game.rnd.integerInRange(player.position.x+175+player.width, player.position.x+400+player.width);
 		}
 		if(game.rnd.integerInRange(0, 1)==1){
-			posY = game.rnd.integerInRange(player.position.y-300-player.width, player.position.y-150-player.width);
+			posY = game.rnd.integerInRange(player.position.y-400-player.width, player.position.y-175-player.width);
 		}else{
-			posY = game.rnd.integerInRange(player.position.y+150+player.width, player.position.y+300+player.width);
+			posY = game.rnd.integerInRange(player.position.y+175+player.width, player.position.y+400+player.width);
 		}
 		
 		if(game.rnd.integerInRange(0, 1) == 0){
@@ -248,6 +276,7 @@ function update(){
 			var color = "FF0000";
 		}
 		source.addChild(cercles(randArray(colors), 0.5, source, true));
+		source.scale.setTo(1);
 		source.anchor.setTo(0.5);
 		source.body.setCircle(source.width/2);
 		nbsourceText.text = nbtext + nbsource;
@@ -280,11 +309,11 @@ function update(){
 				sourcesnonfiable.children[k].checkWorldBounds = true;
 				sourcesnonfiable.children[k].outOfBoundsKill = true;
 				if(game.rnd.integerInRange(1, 100) > 5){
-					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-200, 200);
-					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-200, 200);
+					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
+					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
 				}else{
-					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-350, 350);
-					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-350, 350);
+					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-snonfiaspeed+150, snonfiaspeed+150);
+					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-snonfiaspeed+150, snonfiaspeed+150);
 				}
 			}
 			if (sourcesnonfiable.children[k].alive) {
@@ -294,7 +323,6 @@ function update(){
 			k++;
 		});
 	}
-	
 }
 
 
@@ -315,17 +343,27 @@ function collideHandlerFiable(player, source){
 		nbteleport++;
 		nbTeleportText.text = teletext + nbteleport;
 	}
-	if(player.width < 150){
-		player.width += 5;
-		player.height += 5;
+	if(player.width < 160){
+		player.width += player.width/10;
+		player.height += player.height/10;
 	}
+	if(playerspeed < 3000){
+		playerspeed += playerspeed/25;
+	}else{
+		playerspeed += playerspeed/100;
+	}
+	snonfiaspeed += 10;
 	player.body.setCircle(player.width);
 	player.anchor.setTo((player.width)/32);
-	playerspeed += playerspeed/35;
 	scoreText.text = scortext + score;
 }
 function collideHandlerNonFiable(player, source){
+	explosionfunc(player)
 	player.kill();
+}
+
+function explosionfunc(sprite){
+
 	randexplotabl = randArray(explosions)
 	
 	explosion = game.add.sprite(100, 100, randexplotabl[0]);
@@ -333,11 +371,11 @@ function collideHandlerNonFiable(player, source){
 	// explosion.fixedToCamera = true;
 	game.physics.arcade.enable(explosion);
 	explosion.enableBody = true;
-	// explosion.x = player.worldX
-	// explosion.y = player.worldY
-	explosion.x = player.x;
-	explosion.y = player.y;
-	explosion.scale.setTo(randexplotabl[1]);
+	// explosion.x = sprite.worldX
+	// explosion.y = sprite.worldY
+	explosion.x = sprite.x;
+	explosion.y = sprite.y;
+	explosion.scale.setTo(randexplotabl[1]+score/5);
 	explosion.anchor.setTo(0.5, randexplotabl[2]);
 	explosion.animations.play("boom_left");
 }
@@ -352,6 +390,10 @@ function render(){
 	// if(source){
 	// 	game.debug.body(source);
 	// }
+	// if(menu){
+	// 	game.debug.body(menu);
+	// }
+
 	// if(sourcesfiable){
 	// 	sourcesfiable.forEach(game.debug.body(sourcesfiable.this));
 	// }
@@ -362,3 +404,4 @@ $(document).ready(function(){
 	console.log('coucou');
 
 })
+

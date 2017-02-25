@@ -27,10 +27,7 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
-<<<<<<< HEAD
-=======
 	game.load.spritesheet("button", "assets/buttons.png", 125, 57);
->>>>>>> b54f65104040fbc5f53eae0e26f3b2880813bf67
 	game.load.spritesheet("explosion1", "assets/explosion.png", 64, 64, 24);
 	game.load.spritesheet("explosion2", "assets/nucleaire.png", 320, 233, 25);
 	game.load.spritesheet("explosion3", "assets/explosiion.png", 47, 58, 25);

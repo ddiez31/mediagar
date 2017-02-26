@@ -70,6 +70,7 @@ boost = false,
 boosting = false,
 endboost = false,
 boosttime,
+boostspeed,
 playerspeed= 600,
 snonfiaspeed= 200,
 score= 0,
@@ -104,6 +105,22 @@ function koCode(){
 			// e.kill();
 			e.children[1].visible = false;
 			e.children[0].visible = true;
+			e.kode =! e.kode;
+		})
+	})
+}
+function pasKoCode(){
+	teletext = "nb de teleportation ";
+	nbTeleportText.text = teletext + nbteleport;
+	player.children[0].visible = true;
+	player.children[1].visible = true;
+	player.children[2].visible = false;
+	player.kode =! player.kode;
+	sources.forEach(function(e){
+		e.forEach(function(e){
+			// e.kill();
+			e.children[1].visible = true;
+			e.children[0].visible = false;
 			e.kode =! e.kode;
 		})
 	})
@@ -172,7 +189,6 @@ function playercreation(){
 		player.children[2].visible = false;
 		player.body.setCircle(player.width);
 		player.anchor.setTo((player.width)/32);
-		scoreText.text = scortext + score;
 		player.kode = false;
 	}else if(!player.alive){
 		playerspeed= 600;
@@ -182,9 +198,13 @@ function playercreation(){
 		player.width = 40;
 		player.height = 40;
 		player.body.setCircle(player.width);
+		player.anchor.setTo((player.width)/32);
 		player.position.x = 0;
 		player.position.x = 0;
 		score = 0;
+		nbteleport = 0;
+		scoreText.text = scortext + score;
+		nbTeleportText.text = teletext + nbteleport;
 		sources.forEach(function(type){
 			type.forEach(function(source){
 				source.kill();
@@ -287,7 +307,11 @@ function update(){
 		teleporting = false;
 		playerspeed = prevspeed;
 	}
-	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+	if(!boost){
+		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+	}else{
+		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, boostspeed);
+	}
 
 	if(konacode){
 		koCode();
@@ -297,6 +321,8 @@ function update(){
 			boostage();
 			boosting = false;
 		}
+	}else{
+		pasKoCode();
 	}
 
 	if(i > 9999){
@@ -399,6 +425,7 @@ function teleport(){
 	player.y = game.input.mousePointer.worldY;
 }
 function boostage(){
+	boostspeed = playerspeed/2;
 	nbteleport--;
 	nbTeleportText.text = teletext + nbteleport;
 	boost = true;
@@ -406,6 +433,7 @@ function boostage(){
 	boosttime = setTimeout(function(){
 		endboost = true;
 		setTimeout(function(){
+			endboost = false;
 			boost = false;
 		}, 2500);
 	}, 7500);
@@ -424,10 +452,13 @@ function collideHandlerFiable(player, source){
 		player.width += player.width/20;
 		player.height += player.height/20;
 	}
-	if(playerspeed < 3000){
+	if(playerspeed < 3000 && !boost){
 		playerspeed += playerspeed/25;
-	}else{
-		playerspeed += playerspeed/100;
+	}else if(!boost){
+		playerspeed += playerspeed/120;
+	}
+	if(boost){
+		boostspeed -= boostspeed/20;
 	}
 	snonfiaspeed += 5;
 	player.body.setCircle(player.width);
@@ -435,7 +466,7 @@ function collideHandlerFiable(player, source){
 	scoreText.text = scortext + score;
 }
 function collideHandlerNonFiable(player, source){
-	explosionfunc(player)
+	explosionfunc(player);
 	player.kill();
 }
 
@@ -452,7 +483,7 @@ function explosionfunc(sprite){
 	// explosion.y = sprite.worldY
 	explosion.x = sprite.x;
 	explosion.y = sprite.y;
-	explosion.scale.setTo(randexplotabl[1]+score/5);
+	explosion.scale.setTo(randexplotabl[1]+score/6);
 	explosion.anchor.setTo(0.5, randexplotabl[2]);
 	explosion.animations.play("boom_left");
 }

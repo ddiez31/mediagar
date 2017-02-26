@@ -172,7 +172,6 @@ function playercreation(){
 		player.children[2].visible = false;
 		player.body.setCircle(player.width);
 		player.anchor.setTo((player.width)/32);
-		scoreText.text = scortext + score;
 		player.kode = false;
 	}else if(!player.alive){
 		playerspeed= 600;
@@ -185,6 +184,9 @@ function playercreation(){
 		player.position.x = 0;
 		player.position.x = 0;
 		score = 0;
+		nbteleport = 0;
+		nbTeleportText.text = teletext + nbteleport;
+		scoreText.text = scortext + score;
 		sources.forEach(function(type){
 			type.forEach(function(source){
 				source.kill();
@@ -407,6 +409,7 @@ function boostage(){
 	boosttime = setTimeout(function(){
 		endboost = true;
 		setTimeout(function(){
+			endboost = false;
 			boost = false;
 		}, 2500);
 	}, 7500);

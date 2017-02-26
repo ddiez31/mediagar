@@ -76,6 +76,7 @@ boostspeed,
 playerspeed= 600,
 snonfiaspeed= 200,
 score= 0,
+explosionscale = 0,
 balls,
 nbtext = "nb de sources ",
 scortext = "score ",
@@ -210,6 +211,7 @@ function playercreation(){
 		player.position.x = 0;
 		player.position.x = 0;
 		score = 0;
+		explosionscale = 0;
 		nbteleport = 0;
 		scoreText.text = scortext + score;
 		nbTeleportText.text = teletext + nbteleport;
@@ -466,6 +468,8 @@ function collideHandlerFiable(player, source){
 	}
 	if(boost){
 		boostspeed -= boostspeed/40;
+	}if(score <= 50){
+		explosionscale++
 	}
 	snonfiaspeed += 5;
 	player.body.setCircle(player.width);
@@ -490,7 +494,7 @@ function explosionfunc(sprite){
 	// explosion.y = sprite.worldY
 	explosion.x = sprite.x;
 	explosion.y = sprite.y;
-	explosion.scale.setTo(randexplotabl[1]+score/7);
+	explosion.scale.setTo(randexplotabl[1]+explosionscale/5);
 	explosion.anchor.setTo(0.5, randexplotabl[2]);
 	explosion.animations.play("boom_left");
 	choiseLabel.position.x = h/1.25;

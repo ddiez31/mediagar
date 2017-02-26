@@ -58,6 +58,7 @@ source,
 posX,
 posY,
 nbsource = 0,
+nbmaxsource = 25,
 nbteleport = 0,
 i=0,
 j=0,
@@ -70,11 +71,15 @@ boost = false,
 boosting = false,
 endboost = false,
 boosttime,
+boosttime2,
 boostspeed,
 playerspeed= 600,
 snonfiaspeed= 200,
 score= 0,
-balls;
+balls,
+nbtext = "nb de sources ",
+scortext = "score ",
+teletext = "nb de teleportation ";
 
 //KONAMI CODE haut haut bas bas droite gauche droite gauche B A
 if ( window.addEventListener ) {
@@ -151,28 +156,26 @@ $(window).on("keypress", function(e){
 
 function pausage() {
 	// console.log(camera.position.x);
+	choiseLabel.position.x = h/1.25;
+	choiseLabel.position.y = w/2;
+	choiseLabel.visible = true;
 	game.paused = true;
 }
 
 function unpause(){
-	game.paused = false;
-	// if(true){
-	// }else{
-	// }
+	if(game.paused === true){
+		game.paused = false;
+	}
+	choiseLabel.visible = false;
+	nbsourceText.visible = true;
+	scoreText.visible = true;
+	nbTeleportText.visible = true;
 };
 
-function over() {
-	console.log('button over');
-}
-
-function out() {
-
-	console.log('button out');
-}
 
 function playercreation(){
 	if(!player){
-		player = playerballs.create(game.camera.x + 600, game.camera.y + 300);
+		player = playerballs.create(w/2, h/2);
 		game.physics.arcade.enable(player);
 		player.enableBody = true;
 		player.body.collideWorldBounds = true;
@@ -190,6 +193,11 @@ function playercreation(){
 		player.body.setCircle(player.width);
 		player.anchor.setTo((player.width)/32);
 		player.kode = false;
+
+		camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+		nbsourceText.fixedToCamera = true;
+		scoreText.fixedToCamera = true;
+		nbTeleportText.fixedToCamera = true;
 	}else if(!player.alive){
 		playerspeed= 600;
 		snonfiaspeed= 200;
@@ -229,44 +237,25 @@ function create(){
 	sourcesnonfiable = game.add.group();
 	sources.add(sourcesfiable);
 	sources.add(sourcesnonfiable);
-
-	// menu boutons j'abandone pour l'instant !
-	// button1 = buttons.create(game.add.button(game.camera.x, game.camera.y, 'button', function(){
-	// 	player.visible =! player.visible;
-	// 	console.log(game.camera.x, game.camera.y);
-	// }, this, 5, 4, 6));
-	// // button1.onInputOver.add(over, this);
-	// // button1.onInputOut.add(out, this);
-	// button1.name = 'sky';
-	// button1.anchor.setTo(0.5, 0.5);
-	// button1.scale.setTo(5, 5);
-	// button1.fixedToCamera = true;
-	// button1.visible = false;
-	// buttons.forEach(function(e){
-	// 	var name = e.name;
-	// 	e.addChild(game.add.text(game.camera.x, game.camera.y, "button", { font: '15px Arial', fill: '#FFF' }));
-	// });
-
 	sources.forEach(function(sourcetype){
 		sourcetype.enableBody = true;
 		sourcetype.physicsBodyType = Phaser.Physics.ARCADE;
 		sourcetype.checkWorldBounds = true;
 		sourcetype.outOfBoundsKill = true;	
-	})
+	});
 
+	game.input.onDown.add(unpause, this);
+	game.input.onDown.add(playercreation, this);
 
-	nbtext = "nb de sources ";
-	scortext = "score ";
-	teletext = "nb de teleportation ";
+	choiseLabel = game.add.text(w/2, h/1.25, 'Click', { font: '36px Arial', fill: '#000' });
+	choiseLabel.anchor.setTo(0.5);
+	choiseLabel.fixedToCamera = true;
 	nbsourceText = game.add.text(20, 20, nbtext + nbsource, { font: '36px Arial', fill: '#000' });
+	nbsourceText.visible = false;
 	scoreText = game.add.text(20, 50, scortext + score, { font: '36px Arial', fill: '#000' });
+	scoreText.visible = false;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
-
-	playercreation();
-	camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-	nbsourceText.fixedToCamera = true;
-	scoreText.fixedToCamera = true;
-	nbTeleportText.fixedToCamera = true;
+	nbTeleportText.visible = false;
 	// game.input.addMoveCallback(this);
 }
 
@@ -279,10 +268,12 @@ function update(){
 	i++;
 	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
 	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
-	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
-	if(!konacode || !boost){
+	if(player){
+		game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
+	}
+	if((!konacode || !boost) && player){
 		game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
-	}else if(konacode && boost){
+	}else if(konacode && boost && player){
 		game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerFiable, null, this);
 	}
 
@@ -291,55 +282,65 @@ function update(){
 	// }else{
 	// 	button.alpha = 0.5;
 	// }
+	if(player){
 
-	if(game.input.mousePointer.isDown && !player.alive){
-		playercreation();
-		reviving = true;
-	}if(game.input.mousePointer.isUp && reviving){
-		reviving = false;
-	}
-	if(game.input.mousePointer.isDown && nbteleport >= 1 && !teleporting && !game.pause && !reviving && !konacode){
-		prevspeed = playerspeed;
-		playerspeed += 1200;
-		teleporting = true;
-	}if(game.input.mousePointer.isUp && teleporting && !reviving){
-		teleport();
-		teleporting = false;
-		playerspeed = prevspeed;
-	}
-	if(!boost){
-		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
-	}else{
-		player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, boostspeed);
-	}
-
-	if(konacode){
-		koCode();
-		if(game.input.mousePointer.isDown && nbteleport >= 1 && !boosting && !game.pause && !reviving){
-			boosting = true;
-		}if(game.input.mousePointer.isUp && boosting && !reviving){
-			boostage();
-			boosting = false;
+		if(game.input.mousePointer.isDown && !player.alive){
+			playercreation();
+			reviving = true;
+		}if(game.input.mousePointer.isUp && reviving){
+			reviving = false;
 		}
-	}else{
-		pasKoCode();
-	}
+		if(game.input.mousePointer.isDown && nbteleport >= 1 && !teleporting && !game.pause && !reviving && !konacode){
+			prevspeed = playerspeed;
+			playerspeed += 1200;
+			teleporting = true;
+		}if(game.input.mousePointer.isUp && teleporting && !reviving){
+			teleport();
+			teleporting = false;
+			playerspeed = prevspeed;
+		}
+		if(!boost || endboost){
+			player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
+		}if(boost && !endboost){
+			player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, boostspeed);
+		}
 
-	if(i > 9999){
-		i = 0;
-	}
-
-	if(nbsource<20 && i%30===0){
-
-		if(game.rnd.integerInRange(0, 1)==1){
-			posX = game.rnd.integerInRange(player.position.x-400-player.width, player.position.x-175-player.width);
+		if(konacode){
+			koCode();
+			if(game.input.mousePointer.isDown && nbteleport >= 1 && !boosting && !game.pause && !reviving){
+				boosting = true;
+			}if(game.input.mousePointer.isUp && boosting && !reviving){
+				boostage();
+				boosting = false;
+			}
 		}else{
-			posX = game.rnd.integerInRange(player.position.x+175+player.width, player.position.x+400+player.width);
+			pasKoCode();
+		}
+
+		if(i > 9999){
+			i = 0;
+		}
+	}
+
+	if(nbsource<nbmaxsource && i%15===0){
+		if(player){
+			var ppx = player.position.x;
+			var ppy = player.position.y
+			var pw = player.width;
+		}else{
+			var ppx = w/2;
+			var ppy = h/2;
+			var pw = 0;
 		}
 		if(game.rnd.integerInRange(0, 1)==1){
-			posY = game.rnd.integerInRange(player.position.y-400-player.width, player.position.y-175-player.width);
+			posX = game.rnd.integerInRange(ppx-400-pw, ppx-175-pw);
 		}else{
-			posY = game.rnd.integerInRange(player.position.y+175+player.width, player.position.y+400+player.width);
+			posX = game.rnd.integerInRange(ppx+175+pw, ppx+400+pw);
+		}
+		if(game.rnd.integerInRange(0, 1)==1){
+			posY = game.rnd.integerInRange(ppy-400-pw, ppy-175-pw);
+		}else{
+			posY = game.rnd.integerInRange(ppy+175+pw, ppy+400+pw);
 		}
 
 		if(game.rnd.integerInRange(0, 1) == 0){
@@ -429,10 +430,13 @@ function boostage(){
 	nbteleport--;
 	nbTeleportText.text = teletext + nbteleport;
 	boost = true;
+	nbmaxsource = nbmaxsource*2;
 	clearTimeout(boosttime);
+	clearTimeout(boosttime2);
 	boosttime = setTimeout(function(){
 		endboost = true;
-		setTimeout(function(){
+		nbmaxsource = nbmaxsource/2;
+		boosttime2 = setTimeout(function(){
 			endboost = false;
 			boost = false;
 		}, 2500);
@@ -444,8 +448,11 @@ function collideHandlerFiable(player, source){
 	nbsource--;
 	score ++;
 	nbsourceText.text = nbtext + nbsource;
-	if(score%10===0){
+	if(score%10===0 && !boost){
 		nbteleport++;
+		nbTeleportText.text = teletext + nbteleport;
+	}else if(score%10===0){
+		nbteleport += 0.5;
 		nbTeleportText.text = teletext + nbteleport;
 	}
 	if(player.width < 160){
@@ -458,7 +465,7 @@ function collideHandlerFiable(player, source){
 		playerspeed += playerspeed/120;
 	}
 	if(boost){
-		boostspeed -= boostspeed/20;
+		boostspeed -= boostspeed/40;
 	}
 	snonfiaspeed += 5;
 	player.body.setCircle(player.width);
@@ -483,9 +490,12 @@ function explosionfunc(sprite){
 	// explosion.y = sprite.worldY
 	explosion.x = sprite.x;
 	explosion.y = sprite.y;
-	explosion.scale.setTo(randexplotabl[1]+score/6);
+	explosion.scale.setTo(randexplotabl[1]+score/7);
 	explosion.anchor.setTo(0.5, randexplotabl[2]);
 	explosion.animations.play("boom_left");
+	choiseLabel.position.x = h/1.25;
+	choiseLabel.position.y = w/2;
+	choiseLabel.visible = true;
 }
 
 function debug(ceci){

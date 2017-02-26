@@ -27,6 +27,8 @@ function preload(){
 	game.load.image("lesiteinfo", "assets/lesiteinfo.png");
 	game.load.image("fond", "assets/fond.png");
 	game.load.image("poulpe", "assets/superpowers-logo.png");
+	game.load.spritesheet("p", "assets/pacman.png", 110, 110);
+	game.load.spritesheet("pacman", "assets/pacman1.png", 28, 28);
 	game.load.spritesheet("button", "assets/buttons.png", 125, 57);
 	game.load.spritesheet("explosion1", "assets/explosion.png", 64, 64, 24);
 	game.load.spritesheet("explosion2", "assets/nucleaire.png", 320, 233, 25);
@@ -62,18 +64,24 @@ j=0,
 wwidth,
 wheight,
 teleporting= false,
+reviving = false,
+konacode = false,
+boost = false,
+boosting = false,
+endboost = false,
+boosttime,
 playerspeed= 600,
 snonfiaspeed= 200,
 score= 0,
 balls;
 
-//KONAMI CODE
+//KONAMI CODE haut haut bas bas droite gauche droite gauche B A
 if ( window.addEventListener ) {
 	var kkeys = [], konami = "38,38,40,40,37,39,37,39,66,65";
 	window.addEventListener("keydown", function(e){
 		kkeys.push( e.keyCode );
 		if ( kkeys.toString().indexOf( konami ) >= 0 ) {
-			koCode();
+			konacode =! konacode;
 			kkeys = [];
 		}
 	}, true);
@@ -83,6 +91,23 @@ $(window).on('contextmenu', function(e){
 	e.preventDefault();
 });
 
+var konannim = [];
+function koCode(){
+	teletext = "nb de boosts ";
+	nbTeleportText.text = teletext + nbteleport;
+	player.children[0].visible = false;
+	player.children[1].visible = false;
+	player.children[2].visible = true;
+	player.kode =! player.kode;
+	sources.forEach(function(e){
+		e.forEach(function(e){
+			// e.kill();
+			e.children[1].visible = false;
+			e.children[0].visible = true;
+			e.kode =! e.kode;
+		})
+	})
+}
 
 function cercles(couleur, opacity, sprite, rand){
 	graphic = game.add.graphics();
@@ -96,10 +121,6 @@ function cercles(couleur, opacity, sprite, rand){
 		graphic.drawCircle(0, 0, sprite.width*2);
 	}
 	return graphic;
-}
-
-function koCode(){
-	console.log('coucoukonami');
 }
 
 $(window).on("keypress", function(e){
@@ -128,28 +149,45 @@ function over() {
 }
 
 function out() {
+
 	console.log('button out');
 }
 
 function playercreation(){
 	if(!player){
 		player = playerballs.create(game.camera.x + 600, game.camera.y + 300);
-		player.anchor.setTo((player.width)/32);
 		game.physics.arcade.enable(player);
 		player.enableBody = true;
 		player.body.collideWorldBounds = true;
 		player.addChild(cercles(randArray(colors), 1, player, false));
 		player.addChild(game.add.text(-player.width, -player.height/3, "PSEUDO", { font: '15px Arial', fill: '#FFF' }));
-		player.body.setCircle(player.width);
 		player.body.allowRotation = false;
+		player.width = 40;
+		player.height = 40;
+		player.addChild(game.add.sprite(-player.width, -player.height, "pacman")).scale.setTo(2.5);
+		player.children[2].anchor.setTo(-player.height/500, player.width/37);
+		player.children[2].animations.add('pacmananim', [0, 1, 2, 3], 10, true);
+		player.children[2].animations.play("pacmananim");
+		player.children[2].angle = 90;
+		player.children[2].visible = false;
+		player.body.setCircle(player.width);
+		player.anchor.setTo((player.width)/32);
+		scoreText.text = scortext + score;
+		player.kode = false;
 	}else if(!player.alive){
+		playerspeed= 600;
+		snonfiaspeed= 200;
 		explosion.kill();
 		player.revive();
+		player.width = 40;
+		player.height = 40;
+		player.body.setCircle(player.width);
 		player.position.x = 0;
 		player.position.x = 0;
-		sources.forEach(function(e){
-			e.forEach(function(e){
-				e.kill();
+		score = 0;
+		sources.forEach(function(type){
+			type.forEach(function(source){
+				source.kill();
 			})
 		})
 	}
@@ -196,19 +234,19 @@ function create(){
 		sourcetype.outOfBoundsKill = true;	
 	})
 
-	playercreation();
 
-	camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
 	nbtext = "nb de sources ";
 	scortext = "score ";
 	teletext = "nb de teleportation ";
 	nbsourceText = game.add.text(20, 20, nbtext + nbsource, { font: '36px Arial', fill: '#000' });
-	nbsourceText.fixedToCamera = true;
 	scoreText = game.add.text(20, 50, scortext + score, { font: '36px Arial', fill: '#000' });
-	scoreText.fixedToCamera = true;
 	nbTeleportText = game.add.text(20, 80, teletext + nbteleport, { font: '36px Arial', fill: '#000' });
-	nbTeleportText.fixedToCamera = true;
 
+	playercreation();
+	camera = game.camera.follow(player, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+	nbsourceText.fixedToCamera = true;
+	scoreText.fixedToCamera = true;
+	nbTeleportText.fixedToCamera = true;
 	// game.input.addMoveCallback(this);
 }
 
@@ -222,7 +260,11 @@ function update(){
 	game.physics.arcade.collide(sourcesnonfiable, sourcesnonfiable);
 	game.physics.arcade.collide(sourcesfiable, [sourcesnonfiable, sourcesfiable]);
 	game.physics.arcade.overlap(sourcesfiable, player, collideHandlerFiable, null, this);
-	game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
+	if(!konacode || !boost){
+		game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerNonFiable, null, this);
+	}else if(konacode && boost){
+		game.physics.arcade.overlap(sourcesnonfiable, player, collideHandlerFiable, null, this);
+	}
 
 	// if (true){
 	// 	button.alpha = 1;
@@ -230,26 +272,32 @@ function update(){
 	// 	button.alpha = 0.5;
 	// }
 
-	if(game.input.mousePointer.isDown){
-		if(!player.alive){
-			playercreation();
-		}else if(nbteleport > 0 && !teleporting && !game.pause){
-			prevspeed = playerspeed;
-			playerspeed += 1200;
-			teleporting = true;
-			// player.body.velocity.x += 100;
-			// player.body.velocity.y += 100;
-			// player.rotation = false;
-		}
-
-	}if(game.input.mousePointer.isUp && teleporting){
+	if(game.input.mousePointer.isDown && !player.alive){
+		playercreation();
+		reviving = true;
+	}if(game.input.mousePointer.isUp && reviving){
+		reviving = false;
+	}
+	if(game.input.mousePointer.isDown && nbteleport >= 1 && !teleporting && !game.pause && !reviving && !konacode){
+		prevspeed = playerspeed;
+		playerspeed += 1200;
+		teleporting = true;
+	}if(game.input.mousePointer.isUp && teleporting && !reviving){
 		teleport();
 		teleporting = false;
 		playerspeed = prevspeed;
 	}
-
 	player.rotation = game.physics.arcade.moveToPointer(player, 60, game.input.activePointer, playerspeed);
-	// game.physics.arcade.moveToPointer(player, playerspeed);
+
+	if(konacode){
+		koCode();
+		if(game.input.mousePointer.isDown && nbteleport >= 1 && !boosting && !game.pause && !reviving){
+			boosting = true;
+		}if(game.input.mousePointer.isUp && boosting && !reviving){
+			boostage();
+			boosting = false;
+		}
+	}
 
 	if(i > 9999){
 		i = 0;
@@ -267,15 +315,26 @@ function update(){
 		}else{
 			posY = game.rnd.integerInRange(player.position.y+175+player.width, player.position.y+400+player.width);
 		}
-		
+
 		if(game.rnd.integerInRange(0, 1) == 0){
 			source = sourcesfiable.create(posX, posY, randArray(fiables));
+			source.addChild(game.add.sprite(-source.width, -source.height, "pacman")).scale.setTo(4);
+			source.children[0].animations.add('sourceanim', [game.rnd.integerInRange(12, 15)], 10, true);
 			var color = "0000FF";
 		}else{
 			source = sourcesnonfiable.create(posX, posY, randArray(nonfiables));
+			source.addChild(game.add.sprite(-source.width, -source.height, "pacman")).scale.setTo(4);
+			var annim = game.rnd.integerInRange(0, 3);
+			source.children[0].animations.add('sourceanim', [34+(annim*8), 35+(annim*8) ,38+(annim*8), 39+(annim*8)], 5, true);
+			source.children[0].animations.add('sourceanimfear', [30, 31], 10, true);
+			source.children[0].animations.add('sourceanimfearend', [30, 31, 34+(annim*8), 35+(annim*8)], 10, true);
 			var color = "FF0000";
 		}
 		source.addChild(cercles(randArray(colors), 0.5, source, true));
+		source.children[0].anchor.setTo(-source.width/300);
+		source.children[0].animations.play("sourceanim");
+		source.name = 'sourceanim';
+		source.children[0].visible = false;
 		source.scale.setTo(1);
 		source.anchor.setTo(0.5);
 		source.body.setCircle(source.width/2);
@@ -285,53 +344,71 @@ function update(){
 		j=0;
 		k=0;
 		nbsource=0;
-		sourcesfiable.forEach(function(){
-			sourcesfiable.children[j].checkWorldBounds = true;
-			sourcesfiable.children[j].outOfBoundsKill = true;
-			if(game.rnd.integerInRange(0, 1) == 1){
-				if(game.rnd.integerInRange(1, 100) > 20){
-					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-200, 200);
-					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-200, 200);
-				}else{
-					sourcesfiable.children[j].body.velocity.x = game.rnd.integerInRange(-400, 400);
-					sourcesfiable.children[j].body.velocity.y = game.rnd.integerInRange(-400, 400);
+		sourcesfiable.forEach(function(e){
+			if (e.alive) {
+				e.checkWorldBounds = true;
+				e.outOfBoundsKill = true;
+				if(game.rnd.integerInRange(0, 1) == 1){
+					if(game.rnd.integerInRange(1, 100) > 20){
+						e.body.velocity.x = game.rnd.integerInRange(-200, 200);
+						e.body.velocity.y = game.rnd.integerInRange(-200, 200);
+					}else{
+						e.body.velocity.x = game.rnd.integerInRange(-400, 400);
+						e.body.velocity.y = game.rnd.integerInRange(-400, 400);
+					}
 				}
-			}
-			if (sourcesfiable.children[j].alive) {
 				nbsource++;
 				nbsourceText.text = nbtext + nbsource;
 			}
-			j++;
 		});
-		sourcesnonfiable.forEach(function(){
-			
-			if(game.rnd.integerInRange(0, 1) == 1){
-				sourcesnonfiable.children[k].checkWorldBounds = true;
-				sourcesnonfiable.children[k].outOfBoundsKill = true;
-				if(game.rnd.integerInRange(1, 100) > 5){
-					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
-					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
-				}else{
-					sourcesnonfiable.children[k].body.velocity.x = game.rnd.integerInRange(-snonfiaspeed+150, snonfiaspeed+150);
-					sourcesnonfiable.children[k].body.velocity.y = game.rnd.integerInRange(-snonfiaspeed+150, snonfiaspeed+150);
+		sourcesnonfiable.forEach(function(e){
+			if (e.alive) {
+				e.checkWorldBounds = true;
+				e.outOfBoundsKill = true;
+				if(game.rnd.integerInRange(0, 1) == 1){
+					if(game.rnd.integerInRange(1, 100) > 5){
+						e.body.velocity.x = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
+						e.body.velocity.y = game.rnd.integerInRange(-snonfiaspeed, snonfiaspeed);
+					}else{
+						e.body.velocity.x = game.rnd.integerInRange(-snonfiaspeed+snonfiaspeed/4, snonfiaspeed+snonfiaspeed/4);
+						e.body.velocity.y = game.rnd.integerInRange(-snonfiaspeed+snonfiaspeed/4, snonfiaspeed+snonfiaspeed/4);
+					}
 				}
-			}
-			if (sourcesnonfiable.children[k].alive) {
 				nbsource++;
 				nbsourceText.text = nbtext + nbsource;
 			}
-			k++;
+			if(boost && e.name === 'sourceanim'){
+				e.children[0].animations.play("sourceanimfear");
+				e.name = 'sourceanimfear';
+			}if(!boost && e.name === 'sourceanimfearend'){
+				e.children[0].animations.play("sourceanim");
+				e.name = 'sourceanim';
+			}if(endboost && e.name === 'sourceanimfear'){
+				e.children[0].animations.play("sourceanimfearend");
+				e.name = 'sourceanimfearend';
+			}
 		});
 	}
 }
 
 
-
 function teleport(){
-	player.x = game.input.mousePointer.worldX;
-	player.y = game.input.mousePointer.worldY;
 	nbteleport--;
 	nbTeleportText.text = teletext + nbteleport;
+	player.x = game.input.mousePointer.worldX;
+	player.y = game.input.mousePointer.worldY;
+}
+function boostage(){
+	nbteleport--;
+	nbTeleportText.text = teletext + nbteleport;
+	boost = true;
+	clearTimeout(boosttime);
+	boosttime = setTimeout(function(){
+		endboost = true;
+		setTimeout(function(){
+			boost = false;
+		}, 2500);
+	}, 7500);
 }
 
 function collideHandlerFiable(player, source){
@@ -344,15 +421,15 @@ function collideHandlerFiable(player, source){
 		nbTeleportText.text = teletext + nbteleport;
 	}
 	if(player.width < 160){
-		player.width += player.width/10;
-		player.height += player.height/10;
+		player.width += player.width/20;
+		player.height += player.height/20;
 	}
 	if(playerspeed < 3000){
 		playerspeed += playerspeed/25;
 	}else{
 		playerspeed += playerspeed/100;
 	}
-	snonfiaspeed += 10;
+	snonfiaspeed += 5;
 	player.body.setCircle(player.width);
 	player.anchor.setTo((player.width)/32);
 	scoreText.text = scortext + score;
@@ -364,8 +441,8 @@ function collideHandlerNonFiable(player, source){
 
 function explosionfunc(sprite){
 
-	randexplotabl = randArray(explosions)
-	
+	randexplotabl = randArray(explosions);
+
 	explosion = game.add.sprite(100, 100, randexplotabl[0]);
 	explosion.animations.add('boom_left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30], 10, false);
 	// explosion.fixedToCamera = true;
